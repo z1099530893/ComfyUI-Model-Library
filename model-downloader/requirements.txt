@@ -1,0 +1,6 @@
+# 模型下载器运行依赖（Windows）
+requests==2.34.2
+pywebview==6.2.1
+
+# 仅 tools/make_icons.py 生成图标时使用
+Pillow>=10.0

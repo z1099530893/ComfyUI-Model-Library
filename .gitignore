@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 本地备份与缓存
+_snapshots/
+cache/
+*.log
+
+# 构建产物
+build/
+dist/
+
+# 编辑器与临时目录
+.trae/
+.screenshots/
+.trae-html-share-packages/
+
+# 系统文件
+Thumbs.db
+desktop.ini
+.DS_Store

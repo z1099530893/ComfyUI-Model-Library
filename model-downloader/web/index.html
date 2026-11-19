@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>模型下载器</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 左侧导航 -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v10" /><path d="m8 9 4 4 4-4" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <strong>模型下载器</strong>
+          <span>Model Downloader</span>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-page="library">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+          <span>模型库</span>
+        </button>
+        <button class="nav-item" data-page="download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M4 19h16" /></svg>
+          <span>下载任务</span>
+          <em class="nav-badge" id="navTaskCount">1</em>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <button class="nav-item" data-page="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.14.46.54.83 1.03 1h.09a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1z" /></svg>
+          <span>设置</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 主区域 -->
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">
+          <h1 id="pageTitle">模型库</h1>
+          <p id="pageSubtitle">直接读取磁盘上的模型、示例图与说明文档</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+            <input id="globalSearch" type="search" placeholder="搜索模型 / 作者 / 触发词" />
+          </div>
+          <button class="btn ghost" id="btnRefresh" title="刷新">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="content" id="content">
+        <!-- 下载任务 -->
+        <section class="page" id="page-download">
+          <div class="card new-task">
+            <div class="card-head">
+              <h2>新建下载</h2>
+              <span class="chip-soft">支持 Civitai / HuggingFace / ModelScope</span>
+            </div>
+            <div class="url-row">
+              <div class="field grow">
+                <label>模型网页地址</label>
+                <div class="input-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-2 2" /><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l2-2" /></svg>
+                  <input id="urlInput" type="text" placeholder="https://civitai.com/models/3014612/cinematic-photography" />
+                </div>
+              </div>
+              <button class="btn primary" id="btnParse">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13" /><path d="m13 6 6 6-6 6" /></svg>
+                解析链接
+              </button>
+            </div>
+            <div class="field">
+              <label>保存到</label>
+              <div class="dir-row">
+                <div class="input-wrap grow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+                  <input id="dirInput" type="text" placeholder="选择模型库根目录，例如 F:\KESU硬盘文件备份\下载的模型" />
+                  <button class="inline-btn" id="btnPickDir" type="button">浏览…</button>
+                </div>
+                <button class="btn ghost" id="btnSetDefault" title="设为默认目录">设为默认</button>
+                <div class="recent-picker">
+                  <button class="btn" id="btnRecent" type="button">
+                    最近目录
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                  </button>
+                  <div class="recent-menu" id="recentMenu" hidden></div>
+                </div>
+              </div>
+              <p class="hint">按模型类型自动归档到 <code>checkpoints</code> / <code>diffusion_models</code> / <code>loras</code> / <code>vae</code> / <code>text_encoders</code> / <code>upscale_models</code>；模型文件直接放在类型目录下，说明和示例图放在同名文件夹里，ComfyUI 下拉不会多出一层目录。</p>
+            </div>
+            <div class="parse-preview" id="parsePreview" hidden></div>
+          </div>
+
+          <div class="section-head">
+            <div class="tabs" id="taskTabs">
+              <button class="tab active" data-tab="queue">队列 <em id="queueCount">0</em></button>
+              <button class="tab" data-tab="done">已下载 <em id="doneCount">0</em></button>
+            </div>
+            <div class="section-actions">
+              <button class="text-btn" id="btnPauseAll">全部暂停</button>
+              <button class="text-btn" id="btnClearDone">清除记录</button>
+            </div>
+          </div>
+
+          <div class="task-list" id="taskList"></div>
+        </section>
+
+        <!-- 模型库 -->
+        <section class="page active" id="page-library">
+          <div class="library-toolbar">
+            <div class="type-tabs" id="typeTabs">
+              <button class="type-tab active" data-type="all">全部模型 <em>0</em></button>
+              <button class="type-tab" data-type="checkpoint">基础模型 <em>0</em></button>
+              <button class="type-tab" data-type="lora">LoRA 模型 <em>0</em></button>
+            </div>
+            <div class="toolbar-right">
+              <select class="sort-select" id="sortSelect" title="排序方式">
+                <option value="name">名称</option>
+                <option value="time">修改时间</option>
+                <option value="size">文件大小</option>
+                <option value="type">类型</option>
+              </select>
+              <button class="icon-btn sort-dir" id="btnSortDir" title="升序 / 降序">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v13" /><path d="m6 12 6 6 6-6" /></svg>
+              </button>
+              <div class="seg small" id="cardScale" title="调整卡片大小">
+                <button class="active" data-scale="1">100%</button>
+                <button data-scale="1.25">125%</button>
+                <button data-scale="1.5">150%</button>
+              </div>
+              <div class="view-toggle" id="viewToggle">
+                <button class="icon-btn active" data-view="grid" title="网格视图">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><rect x="14" y="14" width="6" height="6" rx="1" /></svg>
+                </button>
+                <button class="icon-btn" data-view="list" title="列表视图">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="chips" id="baseChips">
+            <button class="chip active" data-base="all">全部 <em>0</em></button>
+          </div>
+
+          <div class="selection-bar" id="selectionBar" hidden>
+            <span class="selection-count" id="selectionCount">已选 0 项</span>
+            <div class="selection-actions">
+              <button class="text-btn" id="btnSelectAll" type="button">全选</button>
+              <button class="text-btn" id="btnSelectNone" type="button">取消选择</button>
+              <button class="text-btn" id="btnBatchFill" type="button">补数据</button>
+              <button class="text-btn danger" id="btnBatchDelete" type="button">删除</button>
+            </div>
+          </div>
+
+          <div class="model-grid" id="modelGrid"></div>
+        </section>
+
+        <!-- 设置 -->
+        <section class="page" id="page-settings">
+          <div class="settings-grid">
+            <div class="card">
+              <div class="card-head"><h2>下载目录</h2></div>
+              <div class="field">
+                <label>默认保存目录</label>
+                <div class="dir-row">
+                  <div class="input-wrap grow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+                    <input id="settingsDir" type="text" placeholder="尚未设置" />
+                  </div>
+                  <button class="btn" id="btnSettingsPickDir">浏览…</button>
+                </div>
+              </div>
+              <div class="field">
+                <label>最近使用</label>
+                <div class="recent-list" id="recentList"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <h2>模型库扫描范围</h2>
+                <span class="chip-soft">设定之外不读取</span>
+              </div>
+              <p class="hint">只有这里列出的目录会被扫描和整理，其他文件夹完全不受影响。</p>
+              <div class="recent-list" id="libraryList"></div>
+              <button class="btn block" id="btnAddLibrary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                添加目录
+              </button>
+              <button class="btn block" id="btnOrganizeAll">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v6h-6" /></svg>
+                整理本地模型库
+              </button>
+              <p class="hint">为缺少资料的模型补写说明、model.json 与示例图。只读取上面列出的目录，不会移动或改名模型文件。</p>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <h2>接入 ComfyUI</h2>
+                <span class="chip-soft">不复制文件</span>
+              </div>
+              <p class="hint">让 ComfyUI 直接读取独立模型库，而不是把几 GB 的文件再复制一份。优先用 ComfyUI 官方的 extra_model_paths.yaml 映射，零权限、最稳；同盘可用硬链接；软链接仅在跨盘时作为备选。</p>
+              <div class="recent-list" id="comfyList"></div>
+              <button class="btn block" id="btnAddComfy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                添加 ComfyUI 目录
+              </button>
+              <div class="field" style="margin-top:14px">
+                <label>接入方式</label>
+                <div class="seg" id="linkMode">
+                  <button class="active" data-mode="auto">自动</button>
+                  <button data-mode="yaml">映射配置</button>
+                  <button data-mode="hardlink">硬链接</button>
+                  <button data-mode="symlink">软链接</button>
+                </div>
+                <p class="hint" id="linkModeHint">自动：优先写入映射配置 → 同盘用硬链接 → 跨盘才提示软链接权限。</p>
+              </div>
+              <div class="switch-row">
+                <div>
+                  <strong>下载完成后自动接入</strong>
+                  <p class="hint">归档完成即出现在 ComfyUI 的模型列表，无需再手动拷贝。</p>
+                </div>
+                <label class="switch">
+                  <input id="autoLinkSwitch" type="checkbox" checked />
+                  <i></i>
+                </label>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h2>站点凭证</h2></div>
+              <p class="hint" style="margin:0 0 12px">Civitai 的下载接口现在统一要求 API Key（仅解析不需要）。生成后粘贴到这里，队列里失败的模型点重试即可继续。</p>
+              <div class="field">
+                <label>Civitai API Key <span class="tag">下载必需</span>
+                  <button class="link-btn" type="button" data-open-url="https://civitai.com/user/account">去获取</button>
+                </label>
+                <input id="tokenCivitai" class="plain-input" type="password" placeholder="粘贴 Civitai API Key" />
+              </div>
+              <div class="field">
+                <label>HuggingFace Token <span class="tag">用于 gated 仓库</span>
+                  <button class="link-btn" type="button" data-open-url="https://huggingface.co/settings/tokens">去获取</button>
+                </label>
+                <input id="tokenHf" class="plain-input" type="password" placeholder="hf_..." />
+              </div>
+              <div class="field">
+                <label>代理服务器 <span class="tag">可选</span></label>
+                <input id="proxyInput" class="plain-input" type="text" placeholder="http://127.0.0.1:7890" />
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h2>内容与显示</h2></div>
+              <div class="switch-row">
+                <div>
+                  <strong>默认模糊成人内容示例图</strong>
+                  <p class="hint">文件照常下载，点击卡片后显示原图。</p>
+                </div>
+                <label class="switch">
+                  <input id="nsfwSwitch" type="checkbox" checked />
+                  <i></i>
+                </label>
+              </div>
+              <div class="switch-row">
+                <div>
+                  <strong>启动时扫描模型库</strong>
+                  <p class="hint">仅扫描上面列出的目录，按需增量读取。</p>
+                </div>
+                <label class="switch">
+                  <input id="scanSwitch" type="checkbox" checked />
+                  <i></i>
+                </label>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h2>维护</h2>
+                <span class="chip-soft">本机</span>
+              </div>
+              <p class="hint" style="margin:0 0 12px">补数据缓存记录每个模型算过的 SHA256 和 Civitai 匹配结果，删除后下次整理会重新计算。不会影响模型文件、说明和设置。</p>
+              <div class="field">
+                <label>模型信息缓存 <span class="tag" id="cacheSize">空</span></label>
+                <button class="btn block" id="btnClearCache">清理缓存</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-foot">
+            <span class="hint" id="configPath">配置保存在本机应用目录</span>
+            <button class="btn primary" id="btnSaveSettings">保存设置</button>
+          </div>
+        </section>
+      </div>
+
+      <footer class="statusbar">
+        <span id="statusText">就绪</span>
+        <span class="dot" id="statusDot">·</span>
+        <span id="statusSpeed"></span>
+        <span class="spacer"></span>
+        <span id="statusDisk">磁盘 --</span>
+        <span class="dot">·</span>
+        <span id="statusVersion">v0.4.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <div class="modal-mask" id="detailModal" hidden>
+    <div class="detail">
+      <button class="detail-close" id="detailClose" title="关闭（Esc）">×</button>
+      <div class="detail-gallery">
+        <div class="detail-stage" id="detailStage">
+          <button class="gallery-nav prev" id="galleryPrev" title="上一张">‹</button>
+          <div class="detail-image" id="detailImage"></div>
+          <button class="gallery-nav next" id="galleryNext" title="下一张">›</button>
+        </div>
+        <div class="detail-thumbs" id="detailThumbs"></div>
+      </div>
+      <div class="detail-side">
+        <h3 id="detailTitle"></h3>
+        <div class="detail-tags" id="detailTags"></div>
+        <dl class="detail-meta" id="detailMeta"></dl>
+        <div class="detail-actions">
+          <button class="btn primary" id="detailOpen">打开文件夹</button>
+          <button class="btn ghost" id="detailCopyTrigger">复制触发词</button>
+          <button class="btn ghost" id="detailOpenLink">打开链接</button>
+        </div>
+        <div class="detail-doc">
+          <div class="detail-doc-head">
+            模型说明
+            <button type="button" class="mini" id="detailCopyDoc">复制说明</button>
+          </div>
+          <pre id="detailDoc"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="renameModal" hidden>
+    <div class="modal">
+      <h3>修改模型信息</h3>
+      <p class="hint">只对排队中、已暂停或失败的任务生效；已完成的任务不会移动文件。</p>
+      <div class="field">
+        <label>模型名称</label>
+        <input id="rnTitle" class="plain-input" type="text" maxlength="96" />
+      </div>
+      <div class="field">
+        <label>文件夹名</label>
+        <input id="rnFolder" class="plain-input" type="text" maxlength="96" />
+      </div>
+      <div class="field">
+        <label>文件名</label>
+        <div class="pp-file">
+          <input id="rnFile" class="plain-input" type="text" maxlength="120" />
+          <em id="rnExt">.safetensors</em>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" id="rnCancel">取消</button>
+        <button class="btn primary" id="rnSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="editModelModal" hidden>
+    <div class="modal edit-model">
+      <h3>编辑模型</h3>
+      <p class="hint" id="editPathHint"></p>
+      <div class="field">
+        <label>模型名称（文件名与资料夹一起改）</label>
+        <input id="editTitle" class="plain-input" type="text" maxlength="96" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>类型</label>
+          <select id="editType" class="plain-input"></select>
+        </div>
+        <div class="field">
+          <label>版本</label>
+          <input id="editVersion" class="plain-input" type="text" maxlength="48" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>基础模型</label>
+          <input id="editBase" class="plain-input" type="text" maxlength="48" />
+        </div>
+        <div class="field">
+          <label>触发词（逗号分隔）</label>
+          <input id="editTriggers" class="plain-input" type="text" maxlength="300" />
+        </div>
+      </div>
+      <div class="field">
+        <label>模型说明</label>
+        <textarea id="editDesc" class="plain-input" rows="5" maxlength="6000"></textarea>
+      </div>
+      <label class="inline-check"><input id="editNsfw" type="checkbox" /> 标记为 NSFW</label>
+      <div class="modal-foot">
+        <button class="btn ghost" id="editCancel">取消</button>
+        <button class="btn primary" id="editSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="organizeModal" hidden>
+    <div class="modal organize-modal">
+      <h3 id="organizeTitle">整理本地模型库</h3>
+      <p class="hint">按文件 SHA256 查询 Civitai，补写说明、model.json 与示例图；不会移动或改名模型文件。首次整理需要读取文件计算哈希，会花一些时间。</p>
+      <div class="organize-options">
+        <label class="inline-check"><input id="orgImages" type="checkbox" checked /> 下载示例图（最多 12 张，只补缺失）</label>
+        <label class="inline-check"><input id="orgOverwrite" type="checkbox" /> 覆盖已有 model.json（默认保留已有资料）</label>
+      </div>
+      <div class="organize-source" id="orgSource" hidden>
+        <label for="orgSourceUrl">来源网址（可选）</label>
+        <input id="orgSourceUrl" class="plain-input" type="text" placeholder="https://civitai.com/models/3014612" />
+      </div>
+      <div class="organize-progress" id="orgProgress" hidden>
+        <div class="progress-bar"><i id="orgBar" style="width:0%"></i></div>
+        <div class="organize-status" id="orgStatus"></div>
+        <div class="organize-log" id="orgLog"></div>
+      </div>
+      <div class="organize-list" id="orgList"></div>
+      <div class="modal-foot">
+        <button class="btn ghost" id="orgClose" type="button">关闭</button>
+        <button class="btn ghost" id="orgCancel" type="button" hidden>取消任务</button>
+        <button class="btn ghost" id="orgPause" type="button" hidden>暂停</button>
+        <button class="btn primary" id="orgStart" type="button">开始补数据</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="confirmModal" hidden>
+    <div class="modal confirm-modal">
+      <h3 id="confirmTitle">确认操作</h3>
+      <p class="confirm-text" id="confirmText"></p>
+      <div class="modal-foot">
+        <button class="btn ghost" id="confirmCancel" type="button">取消</button>
+        <button class="btn primary" id="confirmOk" type="button">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ctx-menu" id="ctxMenu" hidden>
+    <button type="button" data-ctx="detail">查看详情</button>
+    <button type="button" data-ctx="edit">编辑信息</button>
+    <button type="button" data-ctx="open">打开文件夹</button>
+    <button type="button" data-ctx="trigger">复制触发词</button>
+    <button type="button" class="danger" data-ctx="delete">移入回收站</button>
+  </div>
+  <div class="ctx-menu" id="docCtxMenu" hidden>
+    <button type="button" data-doc-ctx="copy">复制</button>
+    <button type="button" data-doc-ctx="copy-all">复制全部说明</button>
+    <button type="button" data-doc-ctx="select-all">全选</button>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
