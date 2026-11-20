@@ -12,6 +12,7 @@ cache/
 # 构建产物
 build/
 dist/
+release/
 
 # 编辑器与临时目录
 .trae/

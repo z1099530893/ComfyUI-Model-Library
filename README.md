@@ -4,7 +4,7 @@
 
 | 工具 | 作用 | 当前状态 |
 | --- | --- | --- |
-| **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.4.0 开发版，仅支持 Civitai，暂无 exe |
+| **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.4.0，提供 Windows 免安装版，仅支持 Civitai |
 | **本地模型库插件**（comfyui-model-library） | 在 ComfyUI 侧边栏浏览本机模型，查看示例图和说明，一键/拖拽插入加载节点 | v0.1.0，功能可用 |
 
 两个工具共享同一套目录和元数据约定（`model.json`、`模型使用说明.txt`、示例图），可以各自独立使用，也可以搭配使用。
@@ -47,7 +47,7 @@ Lora_Downloads/
 
 说明：
 
-- 下载器目前**没有 exe**，需要通过 Python 运行。后续提供 exe 时，仍然放在 `model-downloader/` 下（例如 `model-downloader/release/`），目录结构不变。
+- 下载器提供两种运行方式：免安装 exe（`model-downloader/release/ModelDownloader-v0.4.0/`）和源码运行。exe 的发布包在 `model-downloader/dist/`，目录结构不变。
 - 插件不需要安装第三方 Python 包，复用 ComfyUI 自带的 Pillow。
 - 插件运行后会在自己目录下生成 `cache/thumbs`（缩略图缓存），可随时删除，会自动重建。
 
@@ -56,7 +56,7 @@ Lora_Downloads/
 ## 环境要求
 
 - Windows 10 / 11（下载器依赖 Windows 的资源管理器、回收站等能力）
-- Python 3.11（下载器；开发与测试使用 3.11）
+- Python 3.11（仅源码运行或自行打包时需要；免安装版不需要 Python）
 - 已安装 ComfyUI（插件需要）
 - 下载器需要能访问 Civitai；如网络受限，可在设置里填写代理
 
@@ -72,7 +72,17 @@ git clone https://github.com/z1099530893/ComfyUI-Model-Library.git Lora_Download
 
 也可以直接下载 ZIP 解压，保证 `model-downloader` 与 `comfyui-model-library` 在同一级目录即可。
 
-### 2. 安装并运行模型下载器
+### 2. 运行模型下载器
+
+#### 方式一：免安装版（推荐）
+
+1. 打开 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest)，下载 `ModelDownloader-v0.4.0-win64.zip`；
+2. 解压到任意目录，双击 `ModelDownloader.exe`；
+3. 如果系统提示缺少 WebView2，按提示安装（Windows 10/11 通常已自带）。
+
+免安装版和源码版共用 `%LOCALAPPDATA%\ModelDownloader` 下的配置与任务记录，升级 exe 不会丢失设置。
+
+#### 方式二：源码运行（开发）
 
 ```bat
 cd Lora_Downloads\model-downloader
@@ -81,6 +91,12 @@ py -3.11 -m venv .venv
 ```
 
 安装完成后，双击 `启动模型下载器.bat` 即可（脚本会用 `.venv` 里的 `pythonw.exe` 启动，不弹黑框）。
+
+需要重新生成免安装版时：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1
+```
 
 首次使用建议按顺序配置：
 
@@ -248,9 +264,9 @@ models/loras/<模型文件名>/
 
 可以。删除 `comfyui-model-library/cache` 后，下次打开会自动重建。
 
-**Q：以后有 exe 了，目录会变吗？**
+**Q：exe 和源码版会冲突吗？**
 
-不会。exe 仍然放在 `model-downloader/` 下，插件独立放在 `comfyui-model-library/`，二者互不依赖。
+不会。exe 放在 `model-downloader/release/`，插件独立放在 `comfyui-model-library/`；两者共用配置目录，但同时只能运行一个实例。
 
 ---
 

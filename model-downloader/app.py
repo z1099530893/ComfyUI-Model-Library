@@ -19,7 +19,11 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parent
+if getattr(sys, "frozen", False):
+    # PyInstaller onedir：web / assets 随程序放在 _internal 下
+    ROOT = Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
+else:
+    ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 sys.path.insert(0, str(ROOT))
 
