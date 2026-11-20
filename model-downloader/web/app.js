@@ -164,7 +164,14 @@ function buildTaskMeta(t) {
   if (t.status === "paused") return `<span>已暂停，临时文件已保留</span>${dir}`;
   if (t.status === "error") return `<span class="danger-text">${esc(t.error || "下载失败")}</span>${dir}`;
   if (t.status === "done") {
-    return `<span>完成于 ${esc(t.finished_at || "")}</span><span>示例图 ${t.images_done || 0} 张</span>${dir}`;
+    const link = t.link || {};
+    let linkText = "";
+    if (link.written) linkText = `<span>映射已写入，重启 ComfyUI</span>`;
+    else if (link.linked) linkText = `<span>已接入 ComfyUI</span>`;
+    else if (link.errors && link.errors.length) {
+      linkText = `<span class="danger-text" title="${esc(link.errors.join("\n"))}">接入失败 ${link.errors.length}</span>`;
+    }
+    return `<span>完成于 ${esc(t.finished_at || "")}</span><span>示例图 ${t.images_done || 0} 张</span>${linkText}${dir}`;
   }
   return `<span>等待开始</span>${dir}`;
 }

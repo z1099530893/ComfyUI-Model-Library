@@ -26,7 +26,7 @@ from typing import Any, Callable
 
 import requests
 
-from . import library
+from . import library, linker
 
 USER_AGENT = "ModelDownloader/0.2 (+https://civitai.com)"
 CHUNK = 1024 * 1024
@@ -269,6 +269,7 @@ class Downloader:
             self._verify(task)
             self._download_images(task)
             self._write_docs(task)
+            self._link(task)
             with self._lock:
                 if not self._exists(task_id):
                     return
@@ -543,6 +544,31 @@ class Downloader:
             names,
             downloaded_at=task.get("created_at"),
         )
+
+    def _link(self, task: dict[str, Any]) -> None:
+        settings = self._settings() or {}
+        if not settings.get("auto_link"):
+            return
+        plan = task.get("plan") or {}
+        model_type = str(plan.get("model_type") or "")
+        if not model_type:
+            return
+        with self._lock:
+            task["stage"] = "接入 ComfyUI"
+        try:
+            result = linker.link_model(Path(task["path"]), model_type, settings)
+        except Exception as exc:  # noqa: BLE001 - 接入失败不能影响下载结果
+            result = {
+                "ok": False,
+                "mode": str(settings.get("link_mode") or "auto"),
+                "linked": 0,
+                "skipped": 0,
+                "errors": [f"接入失败：{exc}"],
+                "details": [],
+            }
+        with self._lock:
+            if self._exists(task["id"]):
+                task["link"] = result
 
     # ------------------------------------------------------------------
     # 持久化

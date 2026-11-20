@@ -4,7 +4,7 @@
 
 | 工具 | 作用 | 当前状态 |
 | --- | --- | --- |
-| **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.4.2，提供 Windows 免安装版，仅支持 Civitai |
+| **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.5.0，提供 Windows 免安装版，仅支持 Civitai |
 | **本地模型库插件**（comfyui-model-library） | 在 ComfyUI 侧边栏浏览本机模型，查看示例图和说明，一键/拖拽插入加载节点 | v0.1.2，功能可用 |
 
 两个工具共享同一套目录和元数据约定（`model.json`、`模型使用说明.txt`、示例图），可以各自独立使用，也可以搭配使用。
@@ -47,7 +47,7 @@ Lora_Downloads/
 
 说明：
 
-- 下载器提供两种运行方式：免安装 exe（`model-downloader/release/ModelDownloader-v0.4.2/`）和源码运行。exe 的发布包在 `model-downloader/dist/`，目录结构不变。
+- 下载器提供两种运行方式：免安装 exe（`model-downloader/release/ModelDownloader-v0.5.0/`）和源码运行。exe 的发布包在 `model-downloader/dist/`，目录结构不变。
 - 插件不需要安装第三方 Python 包，复用 ComfyUI 自带的 Pillow。
 - 插件运行后会在自己目录下生成 `cache/thumbs`（缩略图缓存），可随时删除，会自动重建。
 
@@ -76,7 +76,7 @@ git clone https://github.com/z1099530893/ComfyUI-Model-Library.git Lora_Download
 
 #### 方式一：免安装版（推荐）
 
-1. 打开 [下载器 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/downloader-v0.4.2)，下载 `ModelDownloader-v0.4.2-win64.zip`；
+1. 打开 [下载器 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/downloader-v0.5.0)，下载 `ModelDownloader-v0.5.0-win64.zip`；
 2. 解压到任意目录，双击 `ModelDownloader.exe`；
 3. 如果系统提示缺少 WebView2，按提示安装（Windows 10/11 通常已自带）。
 
@@ -162,6 +162,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 - 按模型类型自动归档到 `checkpoints`、`diffusion_models`、`loras`、`vae`、`text_encoders`、`upscale_models`。
 - 模型文件平铺在类型目录下，说明和示例图放在同名文件夹里，ComfyUI 下拉列表不会多出一层目录。
 - 自动下载示例图、生成 `模型使用说明.txt`、写入 `model.json`、记录 SHA256。
+- 下载完成后可自动接入 ComfyUI：同盘硬链接、跨盘软链接，或写入 `extra_model_paths.yaml` 映射；源文件已在 ComfyUI 模型目录内时自动跳过，不会重复占用空间。
 
 **本地模型库**
 
@@ -171,13 +172,13 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 - NSFW 封面默认模糊，可在右上角统一开关；详情内可单独显示/重新模糊。
 - 批量选择、批量「补数据」（按 SHA256 到 Civitai 匹配并补全元数据）、批量移入回收站（模型文件 + 同名资料夹一起删除，可从回收站恢复）。
 - 右键菜单：打开文件夹、复制信息、移入回收站。
-- 设置：默认目录、最近目录、模型库目录、ComfyUI 目录、Token、代理、缓存清理。
+- 设置：默认目录、最近目录、模型库目录、ComfyUI 目录、接入方式（自动/映射/硬链接/软链接）、Token、代理、缓存清理。
 
 **当前限制**
 
 - 站点适配器目前只有 Civitai；界面上的 HuggingFace / ModelScope 入口属于后续计划。
-- 暂无 exe，需要 Python 环境运行。
-- 开发阶段暂停新功能，优先完善插件与文档。
+- 自动接入默认开启，但只会处理 ComfyUI 目录配置完成后的新下载；历史模型不会自动补链接。
+- exe 未做代码签名，部分杀毒软件可能误报。
 
 ### ComfyUI 本地模型库插件
 

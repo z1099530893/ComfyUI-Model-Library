@@ -212,7 +212,7 @@
                 <h2>接入 ComfyUI</h2>
                 <span class="chip-soft">不复制文件</span>
               </div>
-              <p class="hint">让 ComfyUI 直接读取独立模型库，而不是把几 GB 的文件再复制一份。优先用 ComfyUI 官方的 extra_model_paths.yaml 映射，零权限、最稳；同盘可用硬链接；软链接仅在跨盘时作为备选。</p>
+              <p class="hint">让 ComfyUI 直接读取独立模型库，而不是把几 GB 的文件再复制一份。自动方式同盘用硬链接、跨盘尝试软链接；也可以写入 ComfyUI 的 extra_model_paths.yaml 映射，重启后生效。</p>
               <div class="recent-list" id="comfyList"></div>
               <button class="btn block" id="btnAddComfy">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
@@ -226,12 +226,12 @@
                   <button data-mode="hardlink">硬链接</button>
                   <button data-mode="symlink">软链接</button>
                 </div>
-                <p class="hint" id="linkModeHint">自动：优先写入映射配置 → 同盘用硬链接 → 跨盘才提示软链接权限。</p>
+                <p class="hint" id="linkModeHint">自动：同盘硬链接，跨盘尝试软链接；失败会在下载记录里提示。映射配置会写入 extra_model_paths.yaml，需要重启 ComfyUI。</p>
               </div>
               <div class="switch-row">
                 <div>
                   <strong>下载完成后自动接入</strong>
-                  <p class="hint">归档完成即出现在 ComfyUI 的模型列表，无需再手动拷贝。</p>
+                  <p class="hint">归档完成后自动尝试接入；硬链接/软链接立即可用，映射配置需重启 ComfyUI。</p>
                 </div>
                 <label class="switch">
                   <input id="autoLinkSwitch" type="checkbox" checked />
