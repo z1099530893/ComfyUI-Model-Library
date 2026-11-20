@@ -103,13 +103,23 @@ py -3.11 -m venv .venv
 
 把 `comfyui-model-library` 放到 ComfyUI 的 `custom_nodes` 下，目录名建议为 `ComfyUI-ModelLibrary`。
 
-方式一：复制（简单，但改代码后需要重新复制）
+方式一：Release 包（推荐，普通用户）
+
+1. 打开 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest)；
+2. 下载 `ComfyUI-ModelLibrary-v0.1.0.zip`；
+3. 解压到 ComfyUI 的 `custom_nodes` 目录，确保路径为：
+
+```
+ComfyUI/custom_nodes/ComfyUI-ModelLibrary/__init__.py
+```
+
+方式二：复制源码（简单，但改代码后需要重新复制）
 
 ```bat
 xcopy /E /I "F:\Lora_Downloads\comfyui-model-library" "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary"
 ```
 
-方式二：目录联接（开发时推荐，改动源码即时生效）
+方式三：目录联接（开发时推荐，改动源码即时生效）
 
 ```bat
 mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary" "F:\Lora_Downloads\comfyui-model-library"
