@@ -12,7 +12,7 @@
 
 ### 方式一：Release 包
 
-1. 从 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest) 下载 `ComfyUI-ModelLibrary-v0.1.1.zip`；
+1. 从 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/plugin-v0.1.1) 下载 `ComfyUI-ModelLibrary-v0.1.1.zip`；
 2. 解压到 `ComfyUI/custom_nodes/`，确保得到：
    `ComfyUI/custom_nodes/ComfyUI-ModelLibrary/__init__.py`
 3. 重启 ComfyUI，刷新浏览器页面（`Ctrl+F5`）；

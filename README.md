@@ -76,7 +76,7 @@ git clone https://github.com/z1099530893/ComfyUI-Model-Library.git Lora_Download
 
 #### 方式一：免安装版（推荐）
 
-1. 打开 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest)，下载 `ModelDownloader-v0.4.1-win64.zip`；
+1. 打开 [下载器 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/downloader-v0.4.1)，下载 `ModelDownloader-v0.4.1-win64.zip`；
 2. 解压到任意目录，双击 `ModelDownloader.exe`；
 3. 如果系统提示缺少 WebView2，按提示安装（Windows 10/11 通常已自带）。
 
@@ -121,7 +121,7 @@ powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1
 
 方式一：Release 包（推荐，普通用户）
 
-1. 打开 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest)；
+1. 打开 [插件 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/plugin-v0.1.1)；
 2. 下载 `ComfyUI-ModelLibrary-v0.1.1.zip`；
 3. 解压到 ComfyUI 的 `custom_nodes` 目录，确保路径为：
 
