@@ -12,6 +12,16 @@ const STORAGE_REVEALED = "modelLibrary.revealed";
 const STORAGE_VIEW = "modelLibrary.view";
 const CSS_URL = new URL("./model_library.css", import.meta.url).href;
 
+// 类型筛选顺序：前四个常驻，其余有模型才显示
+const TYPE_CHIPS = [
+  { type: "checkpoint", label: "Checkpoint 模型", primary: true },
+  { type: "diffusion", label: "UNET 模型", primary: true },
+  { type: "lora", label: "LoRA 模型", primary: true },
+  { type: "vae", label: "VAE 模型" },
+  { type: "clip", label: "CLIP 模型" },
+  { type: "upscale", label: "Upscale 模型" },
+];
+
 const state = {
   el: null,
   loaded: false,
@@ -281,7 +291,13 @@ function renderTypes() {
   if (!box) return;
 
   const total = state.models.length;
-  const chips = [{ type: "all", label: "全部", count: total }, ...state.types];
+  const counts = new Map(state.types.map((item) => [item.type, item.count]));
+  const chips = [{ type: "all", label: "全部", count: total }];
+  for (const chip of TYPE_CHIPS) {
+    const count = counts.get(chip.type) || 0;
+    if (chip.primary || count > 0) chips.push({ ...chip, count });
+  }
+  if (!chips.some((chip) => chip.type === state.type)) state.type = "all";
   box.innerHTML = chips
     .map(
       (chip) => `
@@ -335,7 +351,7 @@ function renderBases() {
 function cardHtml(model) {
   const hidden = coverHidden(model);
   const cover = model.cover
-    ? `<img src="${escapeHtml(model.cover)}" alt="" loading="lazy" decoding="async" draggable="false" class="${
+    ? `<img src="${escapeHtml(model.cover)}" alt="" loading="lazy" decoding="async" draggable="false" onerror="this.remove()" class="${
         hidden ? "blurred" : ""
       }">`
     : "";

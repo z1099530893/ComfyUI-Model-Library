@@ -4,8 +4,8 @@
 
 | 工具 | 作用 | 当前状态 |
 | --- | --- | --- |
-| **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.4.1，提供 Windows 免安装版，仅支持 Civitai |
-| **本地模型库插件**（comfyui-model-library） | 在 ComfyUI 侧边栏浏览本机模型，查看示例图和说明，一键/拖拽插入加载节点 | v0.1.1，功能可用 |
+| **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.4.2，提供 Windows 免安装版，仅支持 Civitai |
+| **本地模型库插件**（comfyui-model-library） | 在 ComfyUI 侧边栏浏览本机模型，查看示例图和说明，一键/拖拽插入加载节点 | v0.1.2，功能可用 |
 
 两个工具共享同一套目录和元数据约定（`model.json`、`模型使用说明.txt`、示例图），可以各自独立使用，也可以搭配使用。
 
@@ -47,7 +47,7 @@ Lora_Downloads/
 
 说明：
 
-- 下载器提供两种运行方式：免安装 exe（`model-downloader/release/ModelDownloader-v0.4.1/`）和源码运行。exe 的发布包在 `model-downloader/dist/`，目录结构不变。
+- 下载器提供两种运行方式：免安装 exe（`model-downloader/release/ModelDownloader-v0.4.2/`）和源码运行。exe 的发布包在 `model-downloader/dist/`，目录结构不变。
 - 插件不需要安装第三方 Python 包，复用 ComfyUI 自带的 Pillow。
 - 插件运行后会在自己目录下生成 `cache/thumbs`（缩略图缓存），可随时删除，会自动重建。
 
@@ -76,7 +76,7 @@ git clone https://github.com/z1099530893/ComfyUI-Model-Library.git Lora_Download
 
 #### 方式一：免安装版（推荐）
 
-1. 打开 [下载器 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/downloader-v0.4.1)，下载 `ModelDownloader-v0.4.1-win64.zip`；
+1. 打开 [下载器 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/downloader-v0.4.2)，下载 `ModelDownloader-v0.4.2-win64.zip`；
 2. 解压到任意目录，双击 `ModelDownloader.exe`；
 3. 如果系统提示缺少 WebView2，按提示安装（Windows 10/11 通常已自带）。
 
@@ -121,8 +121,8 @@ powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1
 
 方式一：Release 包（推荐，普通用户）
 
-1. 打开 [插件 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/plugin-v0.1.1)；
-2. 下载 `ComfyUI-ModelLibrary-v0.1.1.zip`；
+1. 打开 [插件 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/plugin-v0.1.2)；
+2. 下载 `ComfyUI-ModelLibrary-v0.1.2.zip`；
 3. 解压到 ComfyUI 的 `custom_nodes` 目录，确保路径为：
 
 ```
@@ -182,19 +182,20 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 ### ComfyUI 本地模型库插件
 
 - 在 ComfyUI 左侧工具栏新增「本地模型库」标签页，不占用画布空间。
-- 只读扫描 ComfyUI 的模型目录，覆盖：基础模型、LoRA、UNET 模型（diffusion_models）、VAE、文本编码器、放大模型、ControlNet、CLIP Vision、Embedding。
-- 卡片展示封面、名称、类型、基础模型；支持搜索、类型筛选、基础模型筛选、排序、网格/列表视图。
+- 只读扫描 ComfyUI 的模型目录，覆盖：Checkpoint、UNET（diffusion_models）、LoRA、VAE、CLIP、Upscale、ControlNet、CLIP Vision、Embedding。
+- 类型筛选固定为：全部、Checkpoint 模型、UNET 模型、LoRA 模型、VAE 模型、CLIP 模型、Upscale 模型；ControlNet、CLIP Vision、Embedding 只出现在「全部」里。
+- 卡片展示封面、名称、类型、基础模型；支持搜索、基础模型筛选、排序、网格/列表视图。
 - 详情页：示例图轮播、触发词、作者、大小、时间、说明文档、来源网页。
 - 直接拖拽卡片到画布即可插入加载节点，落在鼠标位置并自动选中，不自动接线：
 
 | 模型类型 | 生成的节点 | 参数 |
 | --- | --- | --- |
-| 基础模型 Checkpoint | CheckpointLoaderSimple | ckpt_name |
-| LoRA | LoraLoader | lora_name |
+| Checkpoint 模型 | CheckpointLoaderSimple | ckpt_name |
+| LoRA 模型 | LoraLoader | lora_name |
 | UNET 模型 | UNETLoader | unet_name |
-| VAE | VAELoader | vae_name |
-| 文本编码器 CLIP | CLIPLoader | clip_name |
-| 放大模型 UpscaleModel | UpscaleModelLoader | model_name |
+| VAE 模型 | VAELoader | vae_name |
+| CLIP 模型 | CLIPLoader | clip_name |
+| Upscale 模型 | UpscaleModelLoader | model_name |
 
   其余类型（ControlNet、CLIP Vision、Embedding）只浏览、复制名称、打开文件夹，不创建节点。
 
@@ -242,11 +243,30 @@ models/loras/<模型文件名>/
 
 ---
 
+## 类型命名与排序
+
+下载器和插件共用同一套类型文字，卡片角标、无图占位、筛选标签保持一致：
+
+| 顺序 | 类型键 | 显示名 | 筛选标签 |
+| --- | --- | --- | --- |
+| 1 | all | 全部 | 常驻 |
+| 2 | checkpoint | Checkpoint 模型 | 常驻 |
+| 3 | diffusion | UNET 模型 | 常驻 |
+| 4 | lora | LoRA 模型 | 常驻 |
+| 5 | vae | VAE 模型 | 有模型才显示 |
+| 6 | clip | CLIP 模型 | 有模型才显示 |
+| 7 | upscale | Upscale 模型 | 有模型才显示 |
+| - | controlnet | ControlNet 模型 | 只在「全部」中显示 |
+| - | clip_vision | CLIP Vision 模型 | 只在「全部」中显示 |
+| - | embedding | Embedding 模型 | 只在「全部」中显示 |
+
+---
+
 ## 常见问题
 
-**Q：下载器和插件的模型数量不一致？**
+**Q：为什么 `vae_approx` 里的模型不显示？**
 
-插件只统计 ComfyUI 可加载的模型目录；下载器扫描整个 `models` 目录，会把 `vae_approx` 里的 8 个预览用小 VAE 也算进「全部模型」。两边其余文件一致。插件有意不加载 `vae_approx`，因为那不是正常使用的模型。
+`vae_approx` 是 ComfyUI 内部生成预览图用的小 VAE，不属于正常加载模型。下载器和插件都已排除这 8 个文件，所以两边总数一致；文件仍保留在磁盘上，不会被删除。
 
 **Q：插件装好后侧边栏没有「本地模型库」？**
 

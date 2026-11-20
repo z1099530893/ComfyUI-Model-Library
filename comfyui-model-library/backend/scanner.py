@@ -36,48 +36,50 @@ TYPE_SPECS: list[dict[str, Any]] = [
     {
         "key": "checkpoints",
         "type": "checkpoint",
-        "label": "基础模型",
+        "label": "Checkpoint 模型",
         "node": "CheckpointLoaderSimple",
         "widget": "ckpt_name",
     },
     {
-        "key": "loras",
-        "type": "lora",
-        "label": "LoRA",
-        "node": "LoraLoader",
-        "widget": "lora_name",
-    },
-    {
         "key": "diffusion_models",
+        "aliases": ["unet"],
         "type": "diffusion",
         "label": "UNET 模型",
         "node": "UNETLoader",
         "widget": "unet_name",
     },
     {
+        "key": "loras",
+        "type": "lora",
+        "label": "LoRA 模型",
+        "node": "LoraLoader",
+        "widget": "lora_name",
+    },
+    {
         "key": "vae",
         "type": "vae",
-        "label": "VAE",
+        "label": "VAE 模型",
         "node": "VAELoader",
         "widget": "vae_name",
     },
     {
         "key": "text_encoders",
+        "aliases": ["clip"],
         "type": "clip",
-        "label": "文本编码器",
+        "label": "CLIP 模型",
         "node": "CLIPLoader",
         "widget": "clip_name",
     },
-    {"key": "controlnet", "type": "controlnet", "label": "ControlNet"},
     {
         "key": "upscale_models",
         "type": "upscale",
-        "label": "放大模型",
+        "label": "Upscale 模型",
         "node": "UpscaleModelLoader",
         "widget": "model_name",
     },
-    {"key": "clip_vision", "type": "clip_vision", "label": "CLIP Vision"},
-    {"key": "embeddings", "type": "embedding", "label": "Embedding"},
+    {"key": "controlnet", "type": "controlnet", "label": "ControlNet 模型"},
+    {"key": "clip_vision", "type": "clip_vision", "label": "CLIP Vision 模型"},
+    {"key": "embeddings", "type": "embedding", "label": "Embedding 模型"},
 ]
 TYPE_ORDER = {spec["type"]: index for index, spec in enumerate(TYPE_SPECS)}
 
@@ -130,31 +132,32 @@ def _refresh_locked() -> None:
     seen: set[str] = set()
 
     for spec in TYPE_SPECS:
-        folder_key = spec["key"]
-        if folder_key not in folder_paths.folder_names_and_paths:
-            continue
-        dirs, exts = folder_paths.folder_names_and_paths[folder_key]
-        exts = {str(ext).lower() for ext in exts}
-        exts = {ext for ext in exts if ext in DEFAULT_EXTS} or set(DEFAULT_EXTS)
-        for root in dirs:
-            try:
-                root = os.path.abspath(root)
-            except OSError:
+        folder_keys = [spec["key"], *spec.get("aliases", [])]
+        for folder_key in folder_keys:
+            if folder_key not in folder_paths.folder_names_and_paths:
                 continue
-            if not os.path.isdir(root):
-                continue
-            roots.append({"type": spec["type"], "label": spec["label"], "path": root})
-            try:
-                found = _walk_root(root, spec, exts)
-            except OSError:
-                continue
-            for model in found:
-                key = os.path.normcase(model["path"])
-                if key in seen:
+            dirs, exts = folder_paths.folder_names_and_paths[folder_key]
+            exts = {str(ext).lower() for ext in exts}
+            exts = {ext for ext in exts if ext in DEFAULT_EXTS} or set(DEFAULT_EXTS)
+            for root in dirs:
+                try:
+                    root = os.path.abspath(root)
+                except OSError:
                     continue
-                seen.add(key)
-                models.append(model)
-                index[model["id"]] = model
+                if not os.path.isdir(root):
+                    continue
+                roots.append({"type": spec["type"], "label": spec["label"], "path": root})
+                try:
+                    found = _walk_root(root, spec, exts)
+                except OSError:
+                    continue
+                for model in found:
+                    key = os.path.normcase(model["path"])
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    models.append(model)
+                    index[model["id"]] = model
 
     models.sort(
         key=lambda m: (
@@ -163,6 +166,11 @@ def _refresh_locked() -> None:
             m["name"].lower(),
         )
     )
+    unique_roots: dict[tuple[str, str], dict[str, str]] = {}
+    for root_info in roots:
+        unique_roots[(root_info["type"], root_info["path"])] = root_info
+    roots = list(unique_roots.values())
+
     _cache.update(
         models=models,
         index=index,

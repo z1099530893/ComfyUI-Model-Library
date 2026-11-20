@@ -301,6 +301,17 @@ function libraryItems() {
 }
 
 const SORT_COLLATOR = new Intl.Collator("zh-CN", { numeric: true, sensitivity: "base" });
+const TYPE_RANK = {
+  checkpoint: 0,
+  diffusion: 1,
+  lora: 2,
+  vae: 3,
+  clip: 4,
+  upscale: 5,
+  controlnet: 6,
+  clip_vision: 7,
+  embedding: 8,
+};
 
 function sortModels(items) {
   const sort = state.settings.library_sort || "name";
@@ -311,7 +322,8 @@ function sortModels(items) {
       : sort === "size"
         ? (m) => Number(m.size || 0)
         : sort === "type"
-          ? (m) => `${m.type_key || ""} ${m.name || ""}`
+          ? (m) =>
+              `${String(TYPE_RANK[m.type_key] ?? 99).padStart(2, "0")} ${m.name || ""}`
           : (m) => m.name || "";
   return [...items].sort((a, b) => {
     const va = getter(a);
@@ -454,18 +466,32 @@ function applySortUI() {
   if (btn) btn.classList.toggle("desc", Boolean(state.settings.library_sort_desc));
 }
 
+const TYPE_TABS = [
+  { type: "all", label: "全部", primary: true },
+  { type: "checkpoint", label: "Checkpoint 模型", primary: true },
+  { type: "diffusion", label: "UNET 模型", primary: true },
+  { type: "lora", label: "LoRA 模型", primary: true },
+  { type: "vae", label: "VAE 模型" },
+  { type: "clip", label: "CLIP 模型" },
+  { type: "upscale", label: "Upscale 模型" },
+];
+
 function renderTypeTabs() {
-  const counts = { all: state.models.length, checkpoint: 0, lora: 0, diffusion: 0 };
+  const box = $("#typeTabs");
+  if (!box) return;
+  const counts = { all: state.models.length };
   state.models.forEach((m) => {
-    if (m.type_key in counts) counts[m.type_key] += 1;
+    counts[m.type_key] = (counts[m.type_key] || 0) + 1;
   });
-  ["all", "checkpoint", "lora", "diffusion"].forEach((key) => {
-    const btn = $(`#typeTabs [data-type="${key}"]`);
-    if (!btn) return;
-    btn.classList.toggle("active", state.viewType === key);
-    const em = btn.querySelector("em");
-    if (em) em.textContent = counts[key];
-  });
+  const chips = TYPE_TABS.filter((tab) => tab.primary || (counts[tab.type] || 0) > 0);
+  if (!chips.some((tab) => tab.type === state.viewType)) state.viewType = "all";
+  box.innerHTML = chips
+    .map(
+      (tab) => `<button class="type-tab ${tab.type === state.viewType ? "active" : ""}" data-type="${tab.type}">
+        ${tab.label} <em>${counts[tab.type] || 0}</em>
+      </button>`
+    )
+    .join("");
 }
 
 function renderBaseChips() {

@@ -15,6 +15,8 @@ from typing import Any
 
 MODEL_EXTS = {".safetensors", ".ckpt", ".pt", ".pth", ".bin"}
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
+# ComfyUI 内部预览用的小 VAE，不作为正常模型展示
+SKIP_DIRS = {"vae_approx"}
 
 # 目录名 → 类型键
 DIR_TYPE = {
@@ -22,11 +24,11 @@ DIR_TYPE = {
     "lycoris": "lora",
     "checkpoints": "checkpoint",
     "vae": "vae",
-    "vae_approx": "vae",
+    "vae_approx": "vae_approx",
     "upscale_models": "upscale",
     "text_encoders": "clip",
     "clip": "clip",
-    "clip_vision": "clip",
+    "clip_vision": "clip_vision",
     "diffusion_models": "diffusion",
     "unet": "diffusion",
     "controlnet": "controlnet",
@@ -34,15 +36,35 @@ DIR_TYPE = {
 }
 
 TYPE_LABEL = {
-    "checkpoint": "基础模型",
-    "lora": "LoRA",
-    "vae": "VAE",
-    "upscale": "UPSCALE",
-    "clip": "CLIP",
-    "diffusion": "Diffusion",
-    "controlnet": "ControlNet",
-    "embedding": "Embedding",
-    "other": "模型",
+    "checkpoint": "Checkpoint 模型",
+    "diffusion": "UNET 模型",
+    "lora": "LoRA 模型",
+    "vae": "VAE 模型",
+    "upscale": "Upscale 模型",
+    "clip": "CLIP 模型",
+    "controlnet": "ControlNet 模型",
+    "clip_vision": "CLIP Vision 模型",
+    "embedding": "Embedding 模型",
+    "other": "其他模型",
+}
+
+# 展示顺序：卡片、类型筛选都据此排序
+TYPE_ORDER = {
+    key: index
+    for index, key in enumerate(
+        (
+            "checkpoint",
+            "diffusion",
+            "lora",
+            "vae",
+            "clip",
+            "upscale",
+            "controlnet",
+            "clip_vision",
+            "embedding",
+            "other",
+        )
+    )
 }
 
 # 站点/旧文档里五花八门的写法 → 类型键
@@ -87,7 +109,11 @@ def scan(dirs: list[str], limit: int = 4000) -> list[dict[str, Any]]:
         if not base.is_dir():
             continue
         for dirpath, dirnames, filenames in os.walk(base):
-            dirnames[:] = sorted(d for d in dirnames if not d.startswith(".") and d != "__pycache__")
+            dirnames[:] = sorted(
+                d
+                for d in dirnames
+                if not d.startswith(".") and d != "__pycache__" and d.lower() not in SKIP_DIRS
+            )
             folder = Path(dirpath)
             models = [f for f in filenames if Path(f).suffix.lower() in MODEL_EXTS]
             if not models:
@@ -109,7 +135,13 @@ def scan(dirs: list[str], limit: int = 4000) -> list[dict[str, Any]]:
                 results.append(_describe(full, meta, asset_dir))
                 if len(results) >= limit:
                     return results
-    results.sort(key=lambda m: (m["type_key"], m["base"].lower(), m["name"].lower()))
+    results.sort(
+        key=lambda m: (
+            TYPE_ORDER.get(m["type_key"], 99),
+            m["base"].lower(),
+            m["name"].lower(),
+        )
+    )
     return results
 
 
