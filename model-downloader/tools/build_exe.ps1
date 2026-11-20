@@ -2,7 +2,7 @@
 # 用法：powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1
 
 param(
-    [string]$Version = "0.5.0"
+    [string]$Version = "0.6.0"
 )
 
 $ErrorActionPreference = "Stop"

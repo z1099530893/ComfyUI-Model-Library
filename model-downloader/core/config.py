@@ -23,7 +23,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "library_view": "grid",
     "library_sort": "name",
     "library_sort_desc": False,
-    "site_tokens": {"civitai": "", "huggingface": ""},
+    "site_tokens": {"civitai": "", "huggingface": "", "modelscope": ""},
     "proxy": "",
     "blur_nsfw": True,
     "scan_on_startup": True,

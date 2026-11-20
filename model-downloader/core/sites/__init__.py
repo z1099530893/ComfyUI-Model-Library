@@ -10,9 +10,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from . import civitai
+from . import civitai, huggingface, modelscope
 
-ADAPTERS = {"civitai": civitai}
+ADAPTERS = {"civitai": civitai, "huggingface": huggingface, "modelscope": modelscope}
 
 
 def resolve(url: str, settings: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -27,5 +27,5 @@ def resolve(url: str, settings: dict[str, Any] | None = None) -> dict[str, Any]:
     return {
         "ok": False,
         "code": "unsupported",
-        "message": "这个链接暂时不支持。当前版本只支持 Civitai 模型页链接。",
+        "message": "这个链接暂时不支持。当前支持 Civitai、Hugging Face 和 ModelScope 的模型页/文件页链接。",
     }

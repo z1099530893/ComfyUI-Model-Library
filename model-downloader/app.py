@@ -33,7 +33,7 @@ from core.downloader import Downloader  # noqa: E402
 from core.organizer import Organizer  # noqa: E402
 
 APP_NAME = "模型下载器"
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.6.0"
 
 _ICON_HANDLES: list[int] = []
 

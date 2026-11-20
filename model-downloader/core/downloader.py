@@ -371,24 +371,29 @@ class Downloader:
         part = dest.with_name(dest.name + ".part")
         dest.parent.mkdir(parents=True, exist_ok=True)
 
+        settings = self._settings()
+        site = str(task.get("site") or "")
+        tokens = settings.get("site_tokens") or {}
+        token_key = site if site in ("civitai", "huggingface", "modelscope") else "civitai"
+        token = str(tokens.get(token_key) or "").strip()
         headers = {"User-Agent": USER_AGENT}
-        token = str((self._settings().get("site_tokens") or {}).get("civitai") or "").strip()
-        if token and "civitai" in task.get("url", ""):
+        if token:
             headers["Authorization"] = f"Bearer {token}"
 
         existing = part.stat().st_size if part.exists() else 0
         if existing:
             headers["Range"] = f"bytes={existing}-"
 
-        proxy = str(self._settings().get("proxy") or "").strip()
+        proxy = str(settings.get("proxy") or "").strip()
         proxies = {"http": proxy, "https": proxy} if proxy else None
 
         with requests.get(
             task["url"], headers=headers, stream=True, timeout=(20, 60), proxies=proxies
         ) as resp:
             if resp.status_code in (401, 403):
+                site_name = str(task.get("site_name") or "站点")
                 raise _AuthRequired(
-                    "这个模型需要 Civitai 授权。请到「设置 → 站点凭证」粘贴 API Key，然后点重试。"
+                    f"这个模型需要 {site_name} 授权。请到「设置 → 站点凭证」填写对应 Token，然后点重试。"
                 )
             if resp.status_code == 416:
                 part.unlink(missing_ok=True)

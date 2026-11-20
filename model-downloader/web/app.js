@@ -14,7 +14,7 @@ const state = {
     link_mode: "auto",
     auto_link: true,
     card_scale: 1,
-    site_tokens: { civitai: "", huggingface: "" },
+    site_tokens: { civitai: "", huggingface: "", modelscope: "" },
     proxy: "",
     blur_nsfw: true,
     scan_on_startup: true,
@@ -893,6 +893,7 @@ function renderSettings() {
   $("#dirInput").value = s.default_download_dir || "";
   $("#tokenCivitai").value = (s.site_tokens && s.site_tokens.civitai) || "";
   $("#tokenHf").value = (s.site_tokens && s.site_tokens.huggingface) || "";
+  $("#tokenModelScope").value = (s.site_tokens && s.site_tokens.modelscope) || "";
   $("#proxyInput").value = s.proxy || "";
   $("#nsfwSwitch").checked = Boolean(s.blur_nsfw);
   $("#scanSwitch").checked = Boolean(s.scan_on_startup);
@@ -963,6 +964,14 @@ function fileExt(filename) {
 }
 
 /* 模型类型：唯一的落点依据，决定 ComfyUI 目录与是否建同名文件夹 */
+const TOKEN_INPUTS = { civitai: "#tokenCivitai", huggingface: "#tokenHf", modelscope: "#tokenModelScope" };
+
+function focusTokenInput(site) {
+  switchPage("settings");
+  const input = $(TOKEN_INPUTS[site] || "#tokenCivitai");
+  if (input) input.focus();
+}
+
 const MODEL_TYPES = [
   ["checkpoint", "基础模型（checkpoints）"],
   ["diffusion", "扩散模型（diffusion_models）"],
@@ -997,6 +1006,7 @@ function renderParsePreview(plan) {
     <div class="pp-main">
       <div class="pp-title">${esc(plan.title)}${plan.version_name ? `<em>${esc(plan.version_name)}</em>` : ""}</div>
       <div class="pp-tags">
+        <span class="hv-tag">${esc(plan.site_name || plan.site || "")}</span>
         ${baseTag}
         <span class="hv-tag">${esc(plan.author || "未知作者")}</span>
         <span class="hv-tag">${plan.images.length} 张示例图</span>
@@ -1041,8 +1051,7 @@ function renderParsePreview(plan) {
   const goAuth = $("#ppGoAuth");
   if (goAuth) {
     goAuth.addEventListener("click", () => {
-      switchPage("settings");
-      $("#tokenCivitai").focus();
+      focusTokenInput(plan.site);
     });
   }
   $("#btnStartDownload").addEventListener("click", () => startDownload(plan));
@@ -1069,8 +1078,7 @@ async function parseModel() {
     }
     if (!res.ok) {
       if (res.code === "auth") {
-        switchPage("settings");
-        $("#tokenCivitai").focus();
+        focusTokenInput(res.site);
       }
       toast(res.message || "解析失败");
       return;
@@ -1313,9 +1321,8 @@ function bindEvents() {
       return;
     }
     if (act === "auth") {
-      switchPage("settings");
-      $("#tokenCivitai").focus();
-      toast("粘贴 API Key 后回到队列点重试");
+      focusTokenInput(task.site);
+      toast("粘贴 Token 后回到队列点重试");
       return;
     }
     if (act === "rename") {
@@ -1439,7 +1446,11 @@ function bindEvents() {
     saveSettings({
       default_download_dir: dir,
       recent_dirs: recent,
-      site_tokens: { civitai: $("#tokenCivitai").value.trim(), huggingface: $("#tokenHf").value.trim() },
+      site_tokens: {
+        civitai: $("#tokenCivitai").value.trim(),
+        huggingface: $("#tokenHf").value.trim(),
+        modelscope: $("#tokenModelScope").value.trim(),
+      },
       proxy: $("#proxyInput").value.trim(),
       blur_nsfw: $("#nsfwSwitch").checked,
       scan_on_startup: $("#scanSwitch").checked,
