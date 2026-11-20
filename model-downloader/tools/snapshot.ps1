@@ -15,7 +15,7 @@ $zip = Join-Path $outDir ("model-downloader_{0}_{1}.zip" -f $stamp, $Label)
 $tmp = Join-Path $env:TEMP ("md_snapshot_" + [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 
-$exclude = @(".venv", "__pycache__", "_snapshots", ".git", "build", "dist")
+$exclude = @(".venv", "__pycache__", "_snapshots", ".git", "build", "dist", "release")
 Get-ChildItem -Path $root -Force | Where-Object { $exclude -notcontains $_.Name } | ForEach-Object {
   Copy-Item $_.FullName -Destination $tmp -Recurse -Force
 }

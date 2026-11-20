@@ -28,7 +28,7 @@ model-downloader/_snapshots/model-downloader_20261119-210347_M3.22.zip
 快照特点：
 
 - 只打包源码、资源、脚本和说明，单个约 0.1–0.2 MB。
-- 自动排除：`.venv`、`__pycache__`、`_snapshots`、`.git`、`build`、`dist`。
+- 自动排除：`.venv`、`__pycache__`、`_snapshots`、`.git`、`build`、`dist`、`release`。
 - 不包含：模型文件、`%LOCALAPPDATA%\ModelDownloader` 下的配置和任务记录。
 - 解压即得到一份可直接运行的源码目录（装好 `.venv` 后）。
 
