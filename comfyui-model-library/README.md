@@ -2,7 +2,7 @@
 
 在 ComfyUI 左侧工具栏增加「本地模型库」侧边栏，用来浏览本机模型、查看示例图和说明，并把模型拖到画布生成对应的加载节点。
 
-当前版本：v0.1.0
+当前版本：v0.1.1
 
 插件只读取 ComfyUI 自己配置的模型目录，**不会移动、改名或删除任何模型文件**。
 
@@ -12,7 +12,7 @@
 
 ### 方式一：Release 包
 
-1. 从 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest) 下载 `ComfyUI-ModelLibrary-v0.1.0.zip`；
+1. 从 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest) 下载 `ComfyUI-ModelLibrary-v0.1.1.zip`；
 2. 解压到 `ComfyUI/custom_nodes/`，确保得到：
    `ComfyUI/custom_nodes/ComfyUI-ModelLibrary/__init__.py`
 3. 重启 ComfyUI，刷新浏览器页面（`Ctrl+F5`）；
@@ -32,7 +32,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 
 ## 功能
 
-- 扫描 ComfyUI 的模型目录：基础模型、LoRA、扩散模型、VAE、文本编码器、放大模型、ControlNet、CLIP Vision、Embedding。
+- 扫描 ComfyUI 的模型目录：基础模型、LoRA、UNET 模型（diffusion_models）、VAE、文本编码器、放大模型、ControlNet、CLIP Vision、Embedding。
 - 搜索、类型筛选、基础模型筛选、排序、网格/列表视图。
 - 详情页：示例图轮播、触发词、作者、大小、时间、说明文档、来源网页。
 - 将卡片拖到画布即可插入加载节点（落在鼠标位置并选中，不自动接线）：
@@ -41,7 +41,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 | --- | --- | --- |
 | 基础模型 | CheckpointLoaderSimple | ckpt_name |
 | LoRA | LoraLoader | lora_name |
-| 扩散模型 | UNETLoader | unet_name |
+| UNET 模型 | UNETLoader | unet_name |
 | VAE | VAELoader | vae_name |
 | 文本编码器 | CLIPLoader | clip_name |
 | 放大模型 | UpscaleModelLoader | model_name |

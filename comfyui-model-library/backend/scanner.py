@@ -50,7 +50,7 @@ TYPE_SPECS: list[dict[str, Any]] = [
     {
         "key": "diffusion_models",
         "type": "diffusion",
-        "label": "扩散模型",
+        "label": "UNET 模型",
         "node": "UNETLoader",
         "widget": "unet_name",
     },

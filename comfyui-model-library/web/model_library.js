@@ -345,7 +345,7 @@ function cardHtml(model) {
       model.node ? "（可拖到画布）" : ""
     }" ${model.node ? 'draggable="true"' : ""}>
       <div class="ml-cover">
-        <div class="ml-ph"><i class="pi pi-image"></i></div>
+        <div class="ml-ph"><span>${escapeHtml(model.type_label)}</span></div>
         ${cover}
         ${hidden ? `<span class="ml-nsfw-mask">NSFW</span>` : ""}
         ${

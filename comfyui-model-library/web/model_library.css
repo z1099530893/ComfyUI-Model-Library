@@ -275,7 +275,13 @@
 }
 
 .ml-grid[data-view="list"] .ml-ph {
-  font-size: 15px;
+  padding: 2px;
+}
+
+.ml-grid[data-view="list"] .ml-ph span {
+  font-size: 8px;
+  letter-spacing: 0;
+  line-height: 1.15;
 }
 
 .ml-grid[data-view="list"] .ml-caption {
@@ -357,9 +363,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ml-fg);
-  opacity: 0.2;
-  font-size: 20px;
+  padding: 12px;
+  color: var(--ml-dim);
+  text-align: center;
+}
+
+.ml-ph span {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
 }
 
 .ml-cover img {

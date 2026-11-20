@@ -4,8 +4,8 @@
 
 | 工具 | 作用 | 当前状态 |
 | --- | --- | --- |
-| **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.4.0，提供 Windows 免安装版，仅支持 Civitai |
-| **本地模型库插件**（comfyui-model-library） | 在 ComfyUI 侧边栏浏览本机模型，查看示例图和说明，一键/拖拽插入加载节点 | v0.1.0，功能可用 |
+| **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.4.1，提供 Windows 免安装版，仅支持 Civitai |
+| **本地模型库插件**（comfyui-model-library） | 在 ComfyUI 侧边栏浏览本机模型，查看示例图和说明，一键/拖拽插入加载节点 | v0.1.1，功能可用 |
 
 两个工具共享同一套目录和元数据约定（`model.json`、`模型使用说明.txt`、示例图），可以各自独立使用，也可以搭配使用。
 
@@ -47,7 +47,7 @@ Lora_Downloads/
 
 说明：
 
-- 下载器提供两种运行方式：免安装 exe（`model-downloader/release/ModelDownloader-v0.4.0/`）和源码运行。exe 的发布包在 `model-downloader/dist/`，目录结构不变。
+- 下载器提供两种运行方式：免安装 exe（`model-downloader/release/ModelDownloader-v0.4.1/`）和源码运行。exe 的发布包在 `model-downloader/dist/`，目录结构不变。
 - 插件不需要安装第三方 Python 包，复用 ComfyUI 自带的 Pillow。
 - 插件运行后会在自己目录下生成 `cache/thumbs`（缩略图缓存），可随时删除，会自动重建。
 
@@ -76,7 +76,7 @@ git clone https://github.com/z1099530893/ComfyUI-Model-Library.git Lora_Download
 
 #### 方式一：免安装版（推荐）
 
-1. 打开 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest)，下载 `ModelDownloader-v0.4.0-win64.zip`；
+1. 打开 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest)，下载 `ModelDownloader-v0.4.1-win64.zip`；
 2. 解压到任意目录，双击 `ModelDownloader.exe`；
 3. 如果系统提示缺少 WebView2，按提示安装（Windows 10/11 通常已自带）。
 
@@ -122,7 +122,7 @@ powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1
 方式一：Release 包（推荐，普通用户）
 
 1. 打开 [Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/latest)；
-2. 下载 `ComfyUI-ModelLibrary-v0.1.0.zip`；
+2. 下载 `ComfyUI-ModelLibrary-v0.1.1.zip`；
 3. 解压到 ComfyUI 的 `custom_nodes` 目录，确保路径为：
 
 ```
@@ -182,7 +182,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 ### ComfyUI 本地模型库插件
 
 - 在 ComfyUI 左侧工具栏新增「本地模型库」标签页，不占用画布空间。
-- 只读扫描 ComfyUI 的模型目录，覆盖：基础模型、LoRA、扩散模型、VAE、文本编码器、放大模型、ControlNet、CLIP Vision、Embedding。
+- 只读扫描 ComfyUI 的模型目录，覆盖：基础模型、LoRA、UNET 模型（diffusion_models）、VAE、文本编码器、放大模型、ControlNet、CLIP Vision、Embedding。
 - 卡片展示封面、名称、类型、基础模型；支持搜索、类型筛选、基础模型筛选、排序、网格/列表视图。
 - 详情页：示例图轮播、触发词、作者、大小、时间、说明文档、来源网页。
 - 直接拖拽卡片到画布即可插入加载节点，落在鼠标位置并自动选中，不自动接线：
@@ -191,7 +191,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 | --- | --- | --- |
 | 基础模型 Checkpoint | CheckpointLoaderSimple | ckpt_name |
 | LoRA | LoraLoader | lora_name |
-| 扩散模型 UNET | UNETLoader | unet_name |
+| UNET 模型 | UNETLoader | unet_name |
 | VAE | VAELoader | vae_name |
 | 文本编码器 CLIP | CLIPLoader | clip_name |
 | 放大模型 UpscaleModel | UpscaleModelLoader | model_name |

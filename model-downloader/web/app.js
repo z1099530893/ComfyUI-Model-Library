@@ -455,11 +455,11 @@ function applySortUI() {
 }
 
 function renderTypeTabs() {
-  const counts = { all: state.models.length, checkpoint: 0, lora: 0 };
+  const counts = { all: state.models.length, checkpoint: 0, lora: 0, diffusion: 0 };
   state.models.forEach((m) => {
-    if (m.type_key === "checkpoint" || m.type_key === "lora") counts[m.type_key] += 1;
+    if (m.type_key in counts) counts[m.type_key] += 1;
   });
-  ["all", "checkpoint", "lora"].forEach((key) => {
+  ["all", "checkpoint", "lora", "diffusion"].forEach((key) => {
     const btn = $(`#typeTabs [data-type="${key}"]`);
     if (!btn) return;
     btn.classList.toggle("active", state.viewType === key);
