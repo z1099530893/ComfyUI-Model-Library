@@ -216,9 +216,9 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 
   LoRA 默认插入「LoRA加载器（仅模型）」，只输出 MODEL；需要 CLIP 输出时可在画布上手动换成「加载LoRA」。
 
-<img src="docs/images/plugin-library.png" alt="插件侧边栏：按类型浏览本机模型，卡片展示封面、基础模型与示例图数量" width="360">
-
-<img src="docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点/打开文件夹、触发词与说明文档" width="360">
+| 插件模型库 | 插件详情页 |
+| --- | --- |
+| <img src="docs/images/plugin-library.png" alt="插件侧边栏：按类型浏览本机模型，卡片展示封面、基础模型与示例图数量" width="300"> | <img src="docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点/打开文件夹、触发词与说明文档" width="300"> |
 
 - 卡片 `+` 按钮和详情页「插入节点」按钮效果相同，适合不方便拖拽时使用。
 - NSFW 封面默认模糊：面板右上角按钮统一控制全部缩略图；详情页内点图片或右上角眼睛按钮可单独显示/重新模糊。

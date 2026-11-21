@@ -50,9 +50,9 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 - ControlNet、CLIP Vision、Embedding 只浏览、复制名称、打开文件夹，不创建节点。
 - LoRA 默认插入「LoRA加载器（仅模型）」（`LoraLoaderModelOnly`），只输出 MODEL；需要 CLIP 输出时可在画布上手动换成「加载LoRA」。
 
-<img src="../docs/images/plugin-library.png" alt="侧边栏模型库：类型筛选、基础模型筛选与卡片列表" width="360">
-
-<img src="../docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点、打开文件夹与说明文档" width="360">
+| 模型库 | 详情页 |
+| --- | --- |
+| <img src="../docs/images/plugin-library.png" alt="侧边栏模型库：类型筛选、基础模型筛选与卡片列表" width="280"> | <img src="../docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点、打开文件夹与说明文档" width="280"> |
 
 - NSFW 封面默认模糊，面板右上角统一开关；详情页内可单独显示/重新模糊。
 - 详情页「打开文件夹」会在资源管理器中定位模型（Windows）。
