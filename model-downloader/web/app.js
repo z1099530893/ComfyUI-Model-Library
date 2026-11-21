@@ -804,7 +804,17 @@ function openEditModel(m) {
   $("#editPathHint").textContent = m.file;
   $("#editTitle").value = m.name || "";
   $("#editVersion").value = m.version || "";
-  $("#editBase").value = m.base && m.base !== "未分类" ? m.base : "";
+  const baseInput = $("#editBase");
+  const baseHint = $("#editBaseHint");
+  if (m.base_locked) {
+    baseInput.value = m.base || "";
+    baseInput.readOnly = true;
+    baseHint.hidden = false;
+  } else {
+    baseInput.value = m.base && m.base !== "未分类" ? m.base : "";
+    baseInput.readOnly = false;
+    baseHint.hidden = true;
+  }
   $("#editTriggers").value = m.trigger || "";
   $("#editDesc").value = m.desc || "";
   $("#editNsfw").checked = Boolean(m.nsfw);
@@ -837,7 +847,7 @@ async function saveEditModel() {
     title,
     model_type: $("#editType").disabled ? "" : $("#editType").value,
     version_name: $("#editVersion").value.trim(),
-    base_model: $("#editBase").value.trim(),
+    base_model: $("#editBase").readOnly ? "" : $("#editBase").value.trim(),
     trigger_words: $("#editTriggers").value.trim(),
     description: $("#editDesc").value,
     nsfw: $("#editNsfw").checked,
@@ -867,7 +877,7 @@ function renderDetail() {
   const canReveal = Boolean(state.settings.blur_nsfw && m.nsfw);
   $("#detailTags").innerHTML = [
     `<span class="hv-tag">${esc(m.type)}</span>`,
-    `<span class="hv-tag">基础模型 ${esc(m.base)}</span>`,
+    `<span class="hv-tag">分类 ${esc(m.base)}</span>`,
     m.nsfw ? '<span class="hv-tag nsfw">NSFW</span>' : "",
     canReveal
       ? `<button type="button" class="mini" id="detailRevealTag">${state.detailRevealed ? "隐藏原图" : "显示原图"}</button>`
@@ -1029,7 +1039,7 @@ function renderParsePreview(plan) {
   const blur = state.settings.blur_nsfw && plan.nsfw;
   const modelType = plan.model_type && TYPE_DIRS[plan.model_type] ? plan.model_type : "checkpoint";
   const baseTag = plan.base_model && plan.base_model !== "未知"
-    ? `<span class="hv-tag">基础模型：${esc(plan.base_model)}</span>`
+    ? `<span class="hv-tag">分类：${esc(plan.base_model)}</span>`
     : "";
   el.innerHTML = `
     <div class="pp-cover ${blur ? "blur" : ""}">

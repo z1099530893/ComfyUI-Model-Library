@@ -34,7 +34,8 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 
 - 扫描 ComfyUI 的模型目录：Checkpoint、UNET（diffusion_models）、LoRA、VAE、CLIP、Upscale、ControlNet、CLIP Vision、Embedding。
 - 类型筛选固定为：全部、Checkpoint 模型、UNET 模型、LoRA 模型、VAE 模型、CLIP 模型、Upscale 模型；ControlNet、CLIP Vision、Embedding 只出现在「全部」里。
-- 搜索、类型筛选、基础模型筛选、排序、网格/列表视图。
+- 搜索、类型筛选、分类筛选、排序、网格/列表视图。
+- 分类优先取类型目录下的一级子文件夹名；没有子文件夹时使用 `model.json` 的 `base_model`。
 - 详情页：示例图轮播、触发词、作者、大小、时间、说明文档、来源网页。
 - 将卡片拖到画布即可插入加载节点（落在鼠标位置并选中，不自动接线）：
 

@@ -98,7 +98,7 @@
                   <div class="recent-menu" id="recentMenu" hidden></div>
                 </div>
               </div>
-              <p class="hint">按模型类型自动归档到 <code>checkpoints</code> / <code>diffusion_models</code> / <code>loras</code> / <code>vae</code> / <code>text_encoders</code> / <code>upscale_models</code>；模型文件默认放在类型目录下，也可在解析预览里选择或新建基础模型子文件夹（如 <code>loras\moss</code>）；说明和示例图放在同目录的同名文件夹里。</p>
+              <p class="hint">按模型类型自动归档到 <code>checkpoints</code> / <code>diffusion_models</code> / <code>loras</code> / <code>vae</code> / <code>text_encoders</code> / <code>upscale_models</code>；模型文件默认放在类型目录下，也可在解析预览里选择或新建分类子文件夹（如 <code>loras\moss</code>）；说明和示例图放在同目录的同名文件夹里。</p>
             </div>
             <div class="parse-preview" id="parsePreview" hidden></div>
           </div>
@@ -406,8 +406,9 @@
       </div>
       <div class="field-row">
         <div class="field">
-          <label>基础模型</label>
+          <label>分类</label>
           <input id="editBase" class="plain-input" type="text" maxlength="48" />
+          <p class="hint" id="editBaseHint" hidden>分类由所在文件夹决定；移动模型到其他文件夹即可修改。</p>
         </div>
         <div class="field">
           <label>触发词（逗号分隔）</label>

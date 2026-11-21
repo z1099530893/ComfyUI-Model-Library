@@ -326,7 +326,7 @@ function renderBases() {
 
   const options = baseOptions();
   select.innerHTML =
-    `<option value="all">全部基础模型</option>` +
+    `<option value="all">全部分类</option>` +
     options
       .map(
         ([base, count]) =>
@@ -962,12 +962,12 @@ function mount(el) {
     </div>
     <div class="ml-types"></div>
     <div class="ml-filters">
-      <select class="ml-select ml-base" title="按基础模型筛选"></select>
+      <select class="ml-select ml-base" title="按分类筛选"></select>
       <select class="ml-select ml-sort" title="排序方式">
         <option value="name">名称</option>
         <option value="time">修改时间</option>
         <option value="size">文件大小</option>
-        <option value="base">基础模型</option>
+        <option value="base">分类</option>
       </select>
       <button class="ml-icon ml-order" title="切换升序 / 降序"></button>
       <button class="ml-icon ml-view" title="切换列表视图"></button>

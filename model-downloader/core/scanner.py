@@ -214,9 +214,10 @@ def _describe(path: Path, meta: dict[str, Any], asset_dir: Path | None = None) -
     type_dir = _find_type_dir(folder)
     type_key = _normalize_type(meta.get("model_type") or meta.get("type"), type_dir)
 
-    base = str(meta.get("base_model") or "")
-    if not base:
-        base = _guess_base(folder, type_dir)
+    # 分类优先取归档子文件夹名；没有子文件夹时才回退到站点的基础模型元数据
+    folder_base = _guess_base(folder, type_dir)
+    base = folder_base or str(meta.get("base_model") or "")
+    base_locked = bool(folder_base)
 
     images = []
     for file in sorted(asset_dir.iterdir()):
@@ -246,6 +247,7 @@ def _describe(path: Path, meta: dict[str, Any], asset_dir: Path | None = None) -
         "type": TYPE_LABEL.get(type_key, "模型"),
         "type_key": type_key,
         "base": base or "未分类",
+        "base_locked": base_locked,
         "author": str(meta.get("author") or ""),
         "size": size,
         "mtime": mtime,

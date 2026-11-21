@@ -164,23 +164,23 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 - 下载时按站点自动携带对应 Token：Civitai API Key、Hugging Face Token、ModelScope Token。
 - 断点续传：先写 `.part` 文件，再用 HTTP Range 续传；支持暂停、继续、取消。
 - 按模型类型自动归档到 `checkpoints`、`diffusion_models`、`loras`、`vae`、`text_encoders`、`upscale_models`。
-- 模型文件放在类型目录下，可再按基础模型分子文件夹（例如 `loras\moss`）；说明和示例图放在同目录的同名文件夹里，ComfyUI 只列模型文件，并按子文件夹分组显示。
+- 模型文件放在类型目录下，可再按分类分子文件夹（例如 `loras\moss`）；说明和示例图放在同目录的同名文件夹里，ComfyUI 只列模型文件，并按子文件夹分组显示。
 - 自动下载示例图、生成 `模型使用说明.txt`、写入 `model.json`、记录 SHA256。
 - 下载完成后可自动接入 ComfyUI：同盘硬链接、跨盘软链接，或写入 `extra_model_paths.yaml` 映射；源文件已在 ComfyUI 模型目录内时自动跳过，不会重复占用空间。
 
-<img src="docs/images/downloader-download.png" alt="下载任务页：粘贴链接解析后预览模型信息、归档类型与基础模型子目录" width="820">
+<img src="docs/images/downloader-download.png" alt="下载任务页：粘贴链接解析后预览模型信息、归档类型与分类子目录" width="820">
 
 **本地模型库**
 
 - 扫描「设置 → 模型库扫描范围」中的目录，读取 `model.json` 和说明文档；老模型没有元数据时会回退到目录名/说明文档推断。
-- 搜索、类型筛选、基础模型筛选、排序、网格/列表视图、卡片大小调节。
+- 搜索、类型筛选、分类筛选、排序、网格/列表视图、卡片大小调节。有归档子文件夹时，分类直接取文件夹名；没有子文件夹的模型可在编辑信息里手动设置分类。
 - 模型详情：示例图轮播、触发词、作者、大小、时间、来源网页、模型说明（与编辑页同一份数据），并可打开完整说明文档。
 - NSFW 封面默认模糊，可在右上角统一开关；详情内可单独显示/重新模糊。
 - 批量选择、批量「补数据」（按 SHA256 到 Civitai 匹配并补全元数据）、批量移入回收站（模型文件 + 同名资料夹一起删除，可从回收站恢复）。
 - 右键菜单：打开文件夹、复制信息、移入回收站。
 - 设置：默认目录、最近目录、模型库目录、ComfyUI 目录、接入方式（自动/映射/硬链接/软链接）、各站点 Token、代理、内容与显示（NSFW 模糊、启动自动扫描）、缓存清理。
 
-<img src="docs/images/downloader-library.png" alt="模型库：类型与基础模型筛选、排序、缩放和网格/列表视图" width="820">
+<img src="docs/images/downloader-library.png" alt="模型库：类型与分类筛选、排序、缩放和网格/列表视图" width="820">
 
 <img src="docs/images/downloader-detail.png" alt="模型详情：示例图轮播、元数据、模型说明与完整文档入口" width="820">
 
@@ -199,7 +199,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 - 在 ComfyUI 左侧工具栏新增「本地模型库」标签页，不占用画布空间。
 - 只读扫描 ComfyUI 的模型目录，覆盖：Checkpoint、UNET（diffusion_models）、LoRA、VAE、CLIP、Upscale、ControlNet、CLIP Vision、Embedding。
 - 类型筛选固定为：全部、Checkpoint 模型、UNET 模型、LoRA 模型、VAE 模型、CLIP 模型、Upscale 模型；ControlNet、CLIP Vision、Embedding 只出现在「全部」里。
-- 卡片展示封面、名称、类型、基础模型；支持搜索、基础模型筛选、排序、网格/列表视图。
+- 卡片展示封面、名称、类型、分类；支持搜索、分类筛选、排序、网格/列表视图。
 - 详情页：示例图轮播、触发词、作者、大小、时间、说明文档、来源网页。
 - 直接拖拽卡片到画布即可插入加载节点，落在鼠标位置并自动选中，不自动接线：
 

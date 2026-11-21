@@ -456,6 +456,8 @@ class Api:
 
         # 站点标题是资料，不是显示名：改名时只动文件，不覆盖原始标题
         site_title = str(meta.get("title") or "").strip() if meta.get("site") else ""
+        # 有归档子文件夹时分类以文件夹为准，保存不得覆盖站点原始基础模型
+        base_locked = relative != Path()
         plan = dict(meta)
         plan.update(
             {
@@ -463,7 +465,9 @@ class Api:
                 "version_name": str(patch.get("version_name", meta.get("version_name") or "")),
                 "model_type": new_type,
                 "type_dir": new_type_dir,
-                "base_model": str(patch.get("base_model", meta.get("base_model") or "")),
+                "base_model": str(meta.get("base_model") or "")
+                if base_locked
+                else str(patch.get("base_model", meta.get("base_model") or "")),
                 "trigger_words": triggers,
                 "description": str(patch.get("description", meta.get("description") or "")),
                 "nsfw": bool(patch.get("nsfw", meta.get("nsfw") or False)),
