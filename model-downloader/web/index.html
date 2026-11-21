@@ -98,7 +98,7 @@
                   <div class="recent-menu" id="recentMenu" hidden></div>
                 </div>
               </div>
-              <p class="hint">按模型类型自动归档到 <code>checkpoints</code> / <code>diffusion_models</code> / <code>loras</code> / <code>vae</code> / <code>text_encoders</code> / <code>upscale_models</code>；模型文件直接放在类型目录下，说明和示例图放在同名文件夹里，ComfyUI 下拉不会多出一层目录。</p>
+              <p class="hint">按模型类型自动归档到 <code>checkpoints</code> / <code>diffusion_models</code> / <code>loras</code> / <code>vae</code> / <code>text_encoders</code> / <code>upscale_models</code>；模型文件默认放在类型目录下，也可在解析预览里选择或新建基础模型子文件夹（如 <code>loras\moss</code>）；说明和示例图放在同目录的同名文件夹里。</p>
             </div>
             <div class="parse-preview" id="parsePreview" hidden></div>
           </div>
@@ -171,6 +171,7 @@
         <!-- 设置 -->
         <section class="page" id="page-settings">
           <div class="settings-grid">
+            <div class="settings-col">
             <div class="card">
               <div class="card-head"><h2>下载目录</h2></div>
               <div class="field">
@@ -239,7 +240,9 @@
                 </label>
               </div>
             </div>
+            </div>
 
+            <div class="settings-col">
             <div class="card">
               <div class="card-head"><h2>站点凭证</h2></div>
               <p class="hint" style="margin:0 0 12px">Civitai 的下载接口现在统一要求 API Key（仅解析不需要）。生成后粘贴到这里，队列里失败的模型点重试即可继续。</p>
@@ -301,6 +304,7 @@
                 <button class="btn block" id="btnClearCache">清理缓存</button>
               </div>
             </div>
+            </div>
           </div>
 
           <div class="settings-foot">
@@ -345,7 +349,10 @@
         <div class="detail-doc">
           <div class="detail-doc-head">
             模型说明
-            <button type="button" class="mini" id="detailCopyDoc">复制说明</button>
+            <span class="detail-doc-actions">
+              <button type="button" class="mini" id="detailOpenDoc">完整文档</button>
+              <button type="button" class="mini" id="detailCopyDoc">复制说明</button>
+            </span>
           </div>
           <pre id="detailDoc"></pre>
         </div>
@@ -468,6 +475,13 @@
     <button type="button" data-doc-ctx="copy">复制</button>
     <button type="button" data-doc-ctx="copy-all">复制全部说明</button>
     <button type="button" data-doc-ctx="select-all">全选</button>
+  </div>
+  <div class="ctx-menu" id="fieldCtxMenu" hidden>
+    <button type="button" data-field-ctx="cut">剪切</button>
+    <button type="button" data-field-ctx="copy">复制</button>
+    <button type="button" data-field-ctx="paste">粘贴</button>
+    <button type="button" data-field-ctx="select-all">全选</button>
+    <button type="button" data-field-ctx="delete">删除</button>
   </div>
   <div class="toast" id="toast"></div>
 

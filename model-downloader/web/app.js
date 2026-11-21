@@ -45,6 +45,9 @@ const state = {
 
 let booted = false;
 let currentTab = "queue";
+let closeParseMenu = null;
+let fieldMenuTarget = null;
+let fieldMenuSelection = { start: 0, end: 0 };
 
 /* ---------- 与后端通信（网页预览时优雅降级） ---------- */
 const hasBackend = () => Boolean(window.pywebview && window.pywebview.api);
@@ -299,7 +302,7 @@ function libraryItems() {
   const term = state.searchTerm.trim().toLowerCase();
   return state.models.filter((m) => {
     if (state.viewType !== "all" && m.type_key !== state.viewType) return false;
-    if (state.viewBase !== "all" && m.base !== state.viewBase) return false;
+    if (state.viewBase !== "all" && baseKey(m.base) !== state.viewBase) return false;
     if (!term) return true;
     return [m.name, m.base, m.author, m.trigger, m.file].some((v) =>
       String(v || "").toLowerCase().includes(term)
@@ -501,17 +504,38 @@ function renderTypeTabs() {
     .join("");
 }
 
+function baseKey(value) {
+  const text = String(value || "").trim().toLowerCase().replace(/[\s_\-./]+/g, "");
+  return text || "未分类";
+}
+
 function renderBaseChips() {
   const scope = state.models.filter((m) => state.viewType === "all" || m.type_key === state.viewType);
-  if (state.viewBase !== "all" && !scope.some((m) => m.base === state.viewBase)) state.viewBase = "all";
-  const counts = new Map();
-  scope.forEach((m) => counts.set(m.base, (counts.get(m.base) || 0) + 1));
-  const groups = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh"));
+  if (state.viewBase !== "all" && !scope.some((m) => baseKey(m.base) === state.viewBase)) state.viewBase = "all";
+  const groups = new Map();
+  scope.forEach((m) => {
+    const key = baseKey(m.base);
+    let group = groups.get(key);
+    if (!group) {
+      group = { total: 0, labels: new Map() };
+      groups.set(key, group);
+    }
+    group.total += 1;
+    const label = String(m.base || "未分类").trim() || "未分类";
+    group.labels.set(label, (group.labels.get(label) || 0) + 1);
+  });
+  const entries = [...groups.entries()].map(([key, group]) => {
+    const [label] = [...group.labels.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh")
+    )[0];
+    return { key, label, count: group.total };
+  });
+  entries.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "zh"));
   const html = [
     `<button class="chip ${state.viewBase === "all" ? "active" : ""}" data-base="all">全部 <em>${scope.length}</em></button>`,
-    ...groups.map(
-      ([base, count]) =>
-        `<button class="chip ${state.viewBase === base ? "active" : ""}" data-base="${esc(base)}">${esc(base)} <em>${count}</em></button>`
+    ...entries.map(
+      (item) =>
+        `<button class="chip ${state.viewBase === item.key ? "active" : ""}" data-base="${esc(item.key)}">${esc(item.label)} <em>${item.count}</em></button>`
     ),
   ];
   $("#baseChips").innerHTML = html.join("");
@@ -882,7 +906,8 @@ function renderDetail() {
   $("#detailThumbs").classList.toggle("blur", Boolean(blur));
   $("#detailThumbs").hidden = images.length === 0;
 
-  $("#detailDoc").textContent = m.doc || m.desc || "这个模型还没有说明文档。";
+  $("#detailDoc").textContent = m.desc || "这个模型还没有文字说明，可在右键菜单「编辑」里补充。";
+  $("#detailOpenDoc").hidden = !m.doc;
   $("#detailOpenLink").disabled = !m.source;
 }
 
@@ -943,6 +968,10 @@ function renderSettings() {
 
 /* ---------- 解析与下载 ---------- */
 function hideParsePreview() {
+  if (closeParseMenu) {
+    closeParseMenu();
+    closeParseMenu = null;
+  }
   state.pendingPlan = null;
   const el = $("#parsePreview");
   el.hidden = true;
@@ -990,13 +1019,17 @@ const TYPE_DIRS = {
 };
 
 function renderParsePreview(plan) {
+  if (closeParseMenu) {
+    closeParseMenu();
+    closeParseMenu = null;
+  }
   const el = $("#parsePreview");
   state.pendingPlan = plan;
   const cover = plan.images && plan.images.length ? plan.images[0].url : "";
   const blur = state.settings.blur_nsfw && plan.nsfw;
   const modelType = plan.model_type && TYPE_DIRS[plan.model_type] ? plan.model_type : "checkpoint";
   const baseTag = plan.base_model && plan.base_model !== "未知"
-    ? `<span class="hv-tag">基础模型 ${esc(plan.base_model)}</span>`
+    ? `<span class="hv-tag">基础模型：${esc(plan.base_model)}</span>`
     : "";
   el.innerHTML = `
     <div class="pp-cover ${blur ? "blur" : ""}">
@@ -1008,8 +1041,10 @@ function renderParsePreview(plan) {
       <div class="pp-tags">
         <span class="hv-tag">${esc(plan.site_name || plan.site || "")}</span>
         ${baseTag}
-        <span class="hv-tag">${esc(plan.author || "未知作者")}</span>
+        <span class="hv-tag">作者：${esc(plan.author || "未知作者")}</span>
+        ${plan.trigger_words && plan.trigger_words.length ? `<span class="hv-tag" title="${esc(plan.trigger_words.join(", "))}">触发词：${esc(plan.trigger_words.join(", "))}</span>` : ""}
         <span class="hv-tag">${plan.images.length} 张示例图</span>
+        <span class="hv-tag">大小：${plan.size ? fmtBytes(plan.size) : "未知"}</span>
       </div>
       <div class="pp-edit pair">
         <label>模型类型
@@ -1017,37 +1052,196 @@ function renderParsePreview(plan) {
         </label>
         <label>模型名称<input id="ppTitle" type="text" maxlength="96" value="${esc(plan.title)}" /></label>
       </div>
-      <div class="pp-meta">
-        <div><span>大小</span><strong>${fmtBytes(plan.size)}</strong></div>
-        <div><span>示例图</span><strong>${plan.images.length} 张</strong></div>
-        <div><span>归档到</span><strong id="ppTarget" title=""></strong></div>
-        ${plan.trigger_words && plan.trigger_words.length ? `<div><span>触发词</span><strong title="${esc(plan.trigger_words.join(", "))}">${esc(plan.trigger_words.join(", "))}</strong></div>` : ""}
+      <div class="pp-path" id="ppPath">
+        <span class="pp-path-label">归档到</span>
+        <span class="pp-path-type" id="ppPathType">${TYPE_DIRS[modelType]}</span>
+        <span class="pp-path-sep">›</span>
+        <span class="pp-subdir-wrap">
+          <input id="ppSubdir" class="pp-subdir" type="text" maxlength="64"
+                 value="${esc(plan.subdir || "")}" placeholder="根目录（可输入新名称）" autocomplete="off" spellcheck="false"
+                 title="选择已有文件夹，或输入新名称后按回车；留空表示放在类型目录下" />
+          <button class="pp-subdir-toggle" id="ppSubdirToggle" type="button" tabindex="-1" aria-label="选择归档文件夹">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </span>
+        <div class="pp-folder-menu" id="ppFolderMenu" hidden></div>
       </div>
       <p class="pp-desc">${esc(plan.description || "作者没有提供文字说明。")}</p>
       ${plan.site === "civitai" && !plan.has_token ? '<div class="pp-warn">Civitai 现已要求所有下载都提供 API Key。现在点「开始下载」会失败，建议先到设置里粘贴 Key。 <button class="link-btn" id="ppGoAuth" type="button">去粘贴</button></div>' : ""}
-    </div>
-    <div class="pp-actions">
-      <button class="btn primary" id="btnStartDownload">开始下载</button>
-      <button class="btn ghost" id="btnCancelParse">取消</button>
+      <div class="pp-footer">
+        <button class="btn ghost" id="btnCancelParse">取消</button>
+        <button class="btn primary" id="btnStartDownload">开始下载</button>
+      </div>
     </div>`;
   el.hidden = false;
 
   const titleInput = $("#ppTitle");
   const typeSelect = $("#ppType");
+  const subdirInput = $("#ppSubdir");
+  const subdirWrap = subdirInput.closest(".pp-subdir-wrap");
+  const subdirToggle = $("#ppSubdirToggle");
+  const folderMenu = $("#ppFolderMenu");
+  const pathType = $("#ppPathType");
+  const pathRow = $("#ppPath");
+  let folders = [];
+  let menuOpen = false;
+  let confirmed = String(plan.subdir || "").trim();
 
   const syncTarget = () => {
     const name = cleanName(titleInput.value, plan.title);
-    // 模型文件平铺在类型目录下，说明和示例图放进同名文件夹
-    const text = `${TYPE_DIRS[typeSelect.value]}\\${name}${fileExt(plan.filename)}`;
-    const targetEl = $("#ppTarget");
-    targetEl.textContent = text;
-    targetEl.title = text;
+    const folder = subdirInput.value.trim();
+    const typeDir = TYPE_DIRS[typeSelect.value];
+    pathType.textContent = typeDir;
+    pathRow.title = `${typeDir}\\${folder ? folder + "\\" : ""}${name}${fileExt(plan.filename)}`;
   };
 
+  const resolveFolder = (value) => {
+    const text = cleanName(value, "");
+    if (!text) return "";
+    const match = folders.find((name) => name.toLowerCase() === text.toLowerCase());
+    return match || text;
+  };
+
+  const renderMenu = () => {
+    const query = subdirInput.value.trim();
+    const lowered = query.toLowerCase();
+    const items = folders;
+    const exact = folders.some((name) => name.toLowerCase() === lowered);
+    const hint = !query
+      ? "输入新名称后按回车新建"
+      : exact
+        ? "按回车确认"
+        : `按回车新建「${query}」`;
+    folderMenu.innerHTML = `
+      <button class="pp-folder-option ${query ? "" : "active"}" type="button" data-value="">（根目录）</button>
+      ${items.map((name) => `<button class="pp-folder-option ${name.toLowerCase() === lowered ? "active" : ""}" type="button" data-value="${esc(name)}">${esc(name)}</button>`).join("")}
+      <p class="pp-folder-hint">${esc(hint)}</p>`;
+  };
+
+  const positionMenu = () => {
+    const rect = subdirInput.getBoundingClientRect();
+    const width = Math.min(Math.max(rect.width, 240), 420);
+    folderMenu.style.width = `${width}px`;
+    folderMenu.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`;
+    const height = folderMenu.offsetHeight;
+    let top = rect.bottom + 5;
+    if (top + height > window.innerHeight - 8) {
+      top = rect.top - height - 5;
+    }
+    folderMenu.style.top = `${Math.max(8, top)}px`;
+  };
+
+  const onDocDown = (event) => {
+    if (folderMenu.contains(event.target) || subdirWrap.contains(event.target)) return;
+    closeMenu();
+  };
+
+  const closeMenu = () => {
+    if (!menuOpen) return;
+    menuOpen = false;
+    folderMenu.hidden = true;
+    document.removeEventListener("mousedown", onDocDown, true);
+    window.removeEventListener("resize", closeMenu);
+    window.removeEventListener("scroll", closeMenu, true);
+  };
+
+  const openMenu = () => {
+    if (!subdirInput.isConnected) return;
+    renderMenu();
+    if (menuOpen) {
+      positionMenu();
+      return;
+    }
+    folderMenu.hidden = false;
+    menuOpen = true;
+    positionMenu();
+    document.addEventListener("mousedown", onDocDown, true);
+    window.addEventListener("resize", closeMenu);
+    window.addEventListener("scroll", closeMenu, true);
+  };
+
+  const commitFolder = (value) => {
+    confirmed = value;
+    subdirInput.value = value;
+    syncTarget();
+    closeMenu();
+  };
+
+  const loadFolders = async () => {
+    const res = await call("list_folders", $("#dirInput").value.trim(), typeSelect.value);
+    if (!subdirInput.isConnected) return;
+    folders = res && res.ok ? res.folders || [] : [];
+    const current = subdirInput.value.trim();
+    const match = folders.find((name) => name.toLowerCase() === current.toLowerCase());
+    if (match) {
+      subdirInput.value = match;
+      confirmed = match;
+    }
+    syncTarget();
+    if (menuOpen) {
+      renderMenu();
+      positionMenu();
+    }
+  };
+
+  closeParseMenu = closeMenu;
+
   titleInput.addEventListener("input", syncTarget);
-  typeSelect.addEventListener("change", syncTarget);
+  subdirInput.addEventListener("input", () => {
+    syncTarget();
+    if (menuOpen) {
+      renderMenu();
+      positionMenu();
+    }
+  });
+  subdirInput.addEventListener("focus", openMenu);
+  subdirInput.addEventListener("click", openMenu);
+  subdirInput.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenu();
+      subdirInput.value = confirmed;
+      syncTarget();
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commitFolder(resolveFolder(subdirInput.value));
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      openMenu();
+      const first = folderMenu.querySelector(".pp-folder-option");
+      if (first) first.focus();
+    }
+  });
+  subdirToggle.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+    const wasOpen = menuOpen;
+    subdirInput.focus();
+    if (wasOpen) closeMenu();
+    else openMenu();
+  });
+  folderMenu.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-value]");
+    if (!button) return;
+    commitFolder(button.dataset.value);
+    subdirInput.focus();
+  });
+  folderMenu.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    closeMenu();
+    subdirInput.focus();
+  });
+  typeSelect.addEventListener("change", () => {
+    syncTarget();
+    loadFolders();
+  });
 
   syncTarget();
+  loadFolders();
   const goAuth = $("#ppGoAuth");
   if (goAuth) {
     goAuth.addEventListener("click", () => {
@@ -1102,6 +1296,8 @@ async function startDownload(basePlan) {
     plan.model_type = $("#ppType").value;
     plan.folder_name = title;
     plan.filename = title + fileExt(basePlan.filename);
+    const subdirInput = $("#ppSubdir");
+    plan.subdir = subdirInput ? cleanName(subdirInput.value, "") : "";
   }
 
   const res = await call("create_task", plan, dir);
@@ -1295,6 +1491,7 @@ function bindEvents() {
     () => {
       hideContextMenu();
       hideDocContextMenu();
+      hideFieldContextMenu();
     },
     { passive: true }
   );
@@ -1596,10 +1793,12 @@ function bindEvents() {
   document.addEventListener("click", () => {
     hideContextMenu();
     hideDocContextMenu();
+    hideFieldContextMenu();
   });
   window.addEventListener("blur", () => {
     hideContextMenu();
     hideDocContextMenu();
+    hideFieldContextMenu();
   });
 
   $("#detailClose").addEventListener("click", closeDetail);
@@ -1635,7 +1834,13 @@ function bindEvents() {
   $("#detailCopyDoc").addEventListener("click", () => {
     const m = state.detailModel;
     if (!m) return;
-    copyText(m.doc || m.desc, "说明已复制");
+    copyText(m.desc || "", "说明已复制");
+  });
+  $("#detailOpenDoc").addEventListener("click", async () => {
+    const m = state.detailModel;
+    if (!m || !m.doc) return toast("这个模型没有说明文档");
+    const res = await call("open_path", `${m.dir}\\模型使用说明.txt`);
+    if (res && !res.ok) toast(res.message || "打不开说明文档");
   });
 
   // 详情里的说明文字：网页默认右键菜单被禁用了，这里补一个复制菜单
@@ -1663,6 +1868,26 @@ function bindEvents() {
       selection.addRange(range);
     }
   });
+
+  // 所有文本输入框共用自定义右键菜单
+  document.addEventListener("contextmenu", (event) => {
+    const field = event.target.closest("input, textarea");
+    if (!isTextField(field)) {
+      hideFieldContextMenu();
+      return;
+    }
+    event.preventDefault();
+    hideContextMenu();
+    hideDocContextMenu();
+    showFieldContextMenu(field, event);
+  });
+  $("#fieldCtxMenu").addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-field-ctx]");
+    if (!btn || btn.disabled) return;
+    const action = btn.dataset.fieldCtx;
+    hideFieldContextMenu();
+    applyFieldEdit(action);
+  });
   document.addEventListener("contextmenu", (e) => {
     if (!e.target.closest("#detailDoc")) hideDocContextMenu();
   });
@@ -1677,6 +1902,7 @@ function bindEvents() {
     if (e.key === "Escape") {
       hideContextMenu();
       hideDocContextMenu();
+      hideFieldContextMenu();
     }
     if (e.key === "Escape" && !$("#editModelModal").hidden) {
       closeEditModel();
@@ -1749,6 +1975,122 @@ function hideDocContextMenu() {
   $("#docCtxMenu").hidden = true;
 }
 
+function isTextField(element) {
+  if (!element || element.disabled) return false;
+  if (element.tagName === "TEXTAREA") return true;
+  if (element.tagName !== "INPUT") return false;
+  const type = String(element.type || "text").toLowerCase();
+  return ![
+    "button", "submit", "reset", "checkbox", "radio", "file",
+    "range", "color", "image", "hidden", "number", "date", "time",
+    "month", "week", "datetime-local",
+  ].includes(type);
+}
+
+function showFieldContextMenu(field, event) {
+  fieldMenuTarget = field;
+  const start = field.selectionStart ?? 0;
+  const end = field.selectionEnd ?? field.value.length;
+  fieldMenuSelection = { start, end };
+  const hasSelection = end > start;
+  const readonly = field.readOnly;
+  const menu = $("#fieldCtxMenu");
+  menu.querySelector('[data-field-ctx="cut"]').disabled = !hasSelection || readonly;
+  menu.querySelector('[data-field-ctx="copy"]').disabled = !hasSelection;
+  menu.querySelector('[data-field-ctx="paste"]').disabled = readonly;
+  menu.querySelector('[data-field-ctx="delete"]').disabled =
+    readonly || (start === end && end >= field.value.length);
+  menu.hidden = false;
+  const rect = menu.getBoundingClientRect();
+  let left = event.clientX;
+  let top = event.clientY;
+  if (left + rect.width > window.innerWidth - 8) left = window.innerWidth - rect.width - 8;
+  if (top + rect.height > window.innerHeight - 8) top = window.innerHeight - rect.height - 8;
+  menu.style.left = `${Math.max(8, left)}px`;
+  menu.style.top = `${Math.max(8, top)}px`;
+}
+
+function hideFieldContextMenu() {
+  $("#fieldCtxMenu").hidden = true;
+}
+
+async function readClipboardText() {
+  if (hasBackend()) {
+    const res = await call("read_clipboard");
+    if (res && res.ok) return String(res.text || "");
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      return await navigator.clipboard.readText();
+    }
+  } catch {
+    // 浏览器没有剪贴板读取权限时保持为空
+  }
+  return "";
+}
+
+async function writeClipboardText(value) {
+  if (hasBackend()) {
+    const res = await call("write_clipboard", value);
+    if (res && res.ok) return true;
+  }
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function applyFieldEdit(action) {
+  const field = fieldMenuTarget;
+  if (!field || !field.isConnected) return;
+  const value = field.value;
+  const start = Math.min(fieldMenuSelection.start, value.length);
+  const end = Math.min(fieldMenuSelection.end, value.length);
+
+  if (action === "select-all") {
+    field.focus();
+    field.select();
+    return;
+  }
+
+  if (action === "paste") {
+    const text = (await readClipboardText()).replace(/[\r\n]+/g, " ").trim();
+    if (!text) return;
+    field.focus();
+    field.setRangeText(text, start, end, "end");
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    return;
+  }
+
+  if (action === "copy") {
+    if (end <= start) return;
+    await writeClipboardText(value.slice(start, end));
+    field.focus();
+    field.setSelectionRange(start, end);
+    return;
+  }
+
+  if (action === "cut") {
+    if (end <= start) return;
+    await writeClipboardText(value.slice(start, end));
+    field.focus();
+    field.setRangeText("", start, end, "start");
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    return;
+  }
+
+  if (action === "delete") {
+    let to = end;
+    if (to === start && to < value.length) to += 1;
+    if (to <= start) return;
+    field.focus();
+    field.setRangeText("", start, to, "start");
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+}
+
 /* ---------- 启动 ---------- */
 async function boot() {
   if (booted) return;
@@ -1779,7 +2121,7 @@ async function boot() {
       refreshTasks();
       refreshOrganize();
     }, 900);
-    if ((state.settings.library_dirs || []).length) scanLibrary();
+    if (state.settings.scan_on_startup && (state.settings.library_dirs || []).length) scanLibrary();
   } else {
     $("#configPath").textContent = "网页预览模式：设置不会写入本机";
   }

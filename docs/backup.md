@@ -32,15 +32,14 @@ model-downloader/_snapshots/model-downloader_20261119-210347_M3.22.zip
 - 不包含：模型文件、`%LOCALAPPDATA%\ModelDownloader` 下的配置和任务记录。
 - 解压即得到一份可直接运行的源码目录（装好 `.venv` 后）。
 
-### 1.2 插件：Git 版本管理
+### 1.2 代码仓库：GitHub main
 
-插件从本次发布起纳入仓库 Git 管理：
+发布仓库 `z1099530893/ComfyUI-Model-Library` 的 `main` 分支同时保存根目录 `README.md`、`docs/`、`comfyui-model-library/` 和 `model-downloader/`：
 
-- 每次发布打标签，例如 `plugin-v0.1.0`。
-- 大改前先提交当前状态，再开分支或打标签。
-- 运行产物 `cache/`、`__pycache__/` 不进入版本库。
-
-插件开发阶段（v0.1.0 之前）没有单独的历史快照，本次整理已把最终代码提交到仓库，作为第一个可回滚节点。
+- 发布或文档更新后，把本机两个项目的源码同步到 `main` 并提交。
+- 本机 `F:\Lora_Downloads` 根目录没有初始化 Git；只有 `model-downloader/` 内部有一个独立的本地仓库，记录 M0–M3.22 的里程碑历史，它不是发布仓库。
+- 插件没有单独的 `.git`，以 `main` 分支上的提交作为回滚节点。
+- 运行产物 `cache/`、`__pycache__/`、`.venv`、`_snapshots/`、`release/` 不进入版本库。
 
 ### 1.3 发布仓库
 
@@ -54,7 +53,7 @@ model-downloader/_snapshots/model-downloader_20261119-210347_M3.22.zip
 
 ## 2. 下载器备份节点
 
-快照位于 `model-downloader/_snapshots/`，按时间顺序如下（均为 2026-11-18 至 2026-11-19）：
+快照位于 `model-downloader/_snapshots/`，按时间顺序如下（2026-11-18 至 2026-11-21，共 41 个）：
 
 | 快照标签 | 阶段说明 |
 | --- | --- |
@@ -90,6 +89,15 @@ model-downloader/_snapshots/model-downloader_20261119-210347_M3.22.zip
 | `M3.21-before-icons` | 替换图标前的保护点 |
 | `M3.21` | 新图标与界面收尾 |
 | `M3.22` | v0.4.0 收尾节点 |
+| `M5.1-before-subfolder-ui` | 归档子文件夹选择 UI 前 |
+| `M5.2-before-folder-combobox` | 文件夹下拉框改造前 |
+| `M5.3-before-size-tagrow` | 大小移到标签行前 |
+| `M5.4-before-tag-order` | 标签顺序调整前 |
+| `M5.5-before-tag-colon` | 标签补冒号前 |
+| `M5.6-before-url-context-menu` | 输入框右键菜单前 |
+| `M5.7-before-generic-ctx` | 通用右键菜单前 |
+| `M5.8-before-base-dedupe` | 基础模型去重前 |
+| `M5.9-before-layout-cleanup` | 设置页/筛选栏布局整理前 |
 
 标签以快照文件名为准；`M3.12`–`M3.14` 等未带描述的快照是阶段性存档，用于回到对应时间点。
 
@@ -106,6 +114,8 @@ model-downloader/_snapshots/model-downloader_20261119-210347_M3.22.zip
 | 列表视图 + NSFW 开关 | 增加列表视图；NSFW 改为全局开关 + 详情内切换 |
 | 类型收窄 + 打开文件夹 | 拖拽限定 6 类；详情页“复制文件名”改为“打开文件夹” |
 | v0.1.0 发布 | 代码、README、文档进入仓库 |
+| v0.1.2 发布 | 类型筛选与下载器统一，排除 `vae_approx` |
+| v0.1.3 发布 | LoRA 拖拽改用 `LoraLoaderModelOnly` |
 
 ---
 
@@ -127,17 +137,17 @@ Copy-Item "$env:TEMP\md_restore\*" . -Recurse -Force
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-### 4.2 从 Git 恢复插件
+### 4.2 从 GitHub 恢复
 
 ```powershell
-cd F:\Lora_Downloads
-git checkout <标签或提交>
+git clone https://github.com/z1099530893/ComfyUI-Model-Library.git
 ```
 
 只恢复插件目录：
 
 ```powershell
-git checkout <标签或提交> -- comfyui-model-library
+cd ComfyUI-Model-Library
+git checkout main -- comfyui-model-library
 ```
 
 ---

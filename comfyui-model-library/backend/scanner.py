@@ -52,7 +52,7 @@ TYPE_SPECS: list[dict[str, Any]] = [
         "key": "loras",
         "type": "lora",
         "label": "LoRA 模型",
-        "node": "LoraLoader",
+        "node": "LoraLoaderModelOnly",
         "widget": "lora_name",
     },
     {

@@ -4,5 +4,5 @@ __pycache__/
 _snapshots/
 build/
 dist/
-*.spec
+release/
 *.log

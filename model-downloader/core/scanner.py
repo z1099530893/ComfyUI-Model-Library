@@ -186,6 +186,28 @@ def _read_txt(path: Path) -> dict[str, Any]:
     return meta
 
 
+DOC_EMPTY_TEXT = "（作者没有提供文字说明）"
+
+
+def _desc_from_doc(doc: str) -> str:
+    """从说明文档里取「模型说明」正文，兼容只有纯文本的老文档。"""
+    text = str(doc or "")
+    if not text.strip():
+        return ""
+    lines = text.splitlines()
+    body = text.strip()
+    for index, line in enumerate(lines):
+        if line.strip() == "模型说明":
+            rest = [
+                item
+                for item in lines[index + 1 :]
+                if item.strip() and set(item.strip()) != {"-"}
+            ]
+            body = "\n".join(rest).strip()
+            break
+    return "" if body == DOC_EMPTY_TEXT else body
+
+
 def _describe(path: Path, meta: dict[str, Any], asset_dir: Path | None = None) -> dict[str, Any]:
     folder = path.parent
     asset_dir = asset_dir or folder
@@ -211,6 +233,11 @@ def _describe(path: Path, meta: dict[str, Any], asset_dir: Path | None = None) -
         size = 0
         mtime = 0
 
+    description = str(meta.get("description") or "").strip()
+    if not description:
+        # 老模型只有 txt 没有 json 说明，用文档里的正文补齐，保证编辑页和详情页同源
+        description = _desc_from_doc(str(meta.get("doc") or ""))
+
     return {
         # 显示名永远跟随文件名：用户手动改名后，补资料不能再把名字改回站点标题
         "name": path.stem,
@@ -227,7 +254,7 @@ def _describe(path: Path, meta: dict[str, Any], asset_dir: Path | None = None) -
         "image_paths": images,
         "trigger": "、".join(meta.get("trigger_words") or []) if isinstance(meta.get("trigger_words"), list) else str(meta.get("trigger_words") or ""),
         "source": str(meta.get("page_url") or ""),
-        "desc": str(meta.get("description") or ""),
+        "desc": description,
         "doc": str(meta.get("doc") or ""),
         "nsfw": bool(meta.get("nsfw")),
         "has_meta": bool(meta),

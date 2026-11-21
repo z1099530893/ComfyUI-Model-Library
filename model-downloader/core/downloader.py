@@ -233,6 +233,19 @@ class Downloader:
     def stop(self) -> None:
         self._stop.set()
 
+    def shutdown(self) -> None:
+        """关窗口收尾：未完成任务标为暂停并立即落盘，下次启动继续。"""
+        with self._lock:
+            for task in self._tasks:
+                if task.get("status") in ("queued", "running"):
+                    task["status"] = "paused"
+                    task["stage"] = "已暂停（程序退出）"
+                    task["speed"] = 0
+            self._save(force=True)
+        for ctl in list(self._ctl.values()):
+            ctl["pause"].set()
+        self.stop()
+
     # ------------------------------------------------------------------
     # 队列线程
     # ------------------------------------------------------------------

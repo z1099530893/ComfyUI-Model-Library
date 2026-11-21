@@ -93,7 +93,7 @@ def link_model(source: str | Path, model_type: str, settings: dict[str, Any]) ->
             result["skipped"] += 1
             result["details"].append({"root": str(root), "ok": True, "message": "已在 ComfyUI 模型目录内"})
             continue
-        target_dir = mroot / spec["dir"]
+        target_dir = mroot / spec["dir"] / _subdir_of(source, spec["dir"])
         dest = target_dir / source.name
         try:
             target_dir.mkdir(parents=True, exist_ok=True)
@@ -148,6 +148,15 @@ def _is_inside(path: Path, root: Path) -> bool:
         return True
     except (OSError, ValueError):
         return False
+
+
+def _subdir_of(source: Path, type_dir: str) -> Path:
+    """取出模型文件在类型目录下的相对子路径，接入时保持同样的文件夹结构。"""
+    parts = source.parts
+    for index in range(len(parts) - 1, -1, -1):
+        if parts[index].lower() == type_dir.lower():
+            return Path(*parts[index + 1 : -1])
+    return Path()
 
 
 def _library_paths(settings: dict[str, Any]) -> dict[str, list[str]]:

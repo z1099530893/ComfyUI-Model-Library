@@ -8,7 +8,7 @@
 
 from .backend import routes as _routes  # noqa: F401  导入即注册 HTTP 接口
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 WEB_DIRECTORY = "./web"
 

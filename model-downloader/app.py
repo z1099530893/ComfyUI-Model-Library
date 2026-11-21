@@ -154,6 +154,78 @@ def _doc_mentions(path: Path, filename: str) -> bool:
     return False
 
 
+_CF_UNICODETEXT = 13
+_GMEM_MOVEABLE = 0x0002
+
+
+def _open_clipboard() -> bool:
+    """打开系统剪贴板；被其他程序短暂占用时重试几次。"""
+    for _ in range(5):
+        if ctypes.windll.user32.OpenClipboard(None):
+            return True
+        time.sleep(0.02)
+    return False
+
+
+def _read_clipboard_text() -> str:
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+    user32.GetClipboardData.restype = wintypes.HANDLE
+    kernel32.GlobalLock.restype = wintypes.LPVOID
+    kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+    kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+    if not _open_clipboard():
+        return ""
+    try:
+        handle = user32.GetClipboardData(_CF_UNICODETEXT)
+        if not handle:
+            return ""
+        pointer = kernel32.GlobalLock(handle)
+        if not pointer:
+            return ""
+        try:
+            return ctypes.wstring_at(pointer)
+        finally:
+            kernel32.GlobalUnlock(handle)
+    finally:
+        user32.CloseClipboard()
+
+
+def _write_clipboard_text(text: str) -> bool:
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+    kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
+    kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+    kernel32.GlobalLock.restype = wintypes.LPVOID
+    kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+    kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+    kernel32.GlobalFree.argtypes = [wintypes.HGLOBAL]
+    user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
+    user32.SetClipboardData.restype = wintypes.HANDLE
+
+    data = ctypes.create_unicode_buffer(str(text or ""))
+    size = ctypes.sizeof(data)
+    if not _open_clipboard():
+        return False
+    try:
+        user32.EmptyClipboard()
+        handle = kernel32.GlobalAlloc(_GMEM_MOVEABLE, size)
+        if not handle:
+            return False
+        pointer = kernel32.GlobalLock(handle)
+        if not pointer:
+            kernel32.GlobalFree(handle)
+            return False
+        ctypes.memmove(pointer, ctypes.addressof(data), size)
+        kernel32.GlobalUnlock(handle)
+        if not user32.SetClipboardData(_CF_UNICODETEXT, handle):
+            kernel32.GlobalFree(handle)
+            return False
+        return True
+    finally:
+        user32.CloseClipboard()
+
+
 class Api:
     """暴露给前端 JavaScript 的本机能力。"""
 
@@ -197,10 +269,44 @@ class Api:
             return {"ok": False, "code": "internal", "message": f"解析失败：{exc}"}
         if not result.get("ok"):
             return result
+        if not result.get("subdir"):
+            result["subdir"] = library.base_model_subdir(result.get("base_model"))
         target_dir = (directory or self.config.data.get("default_download_dir") or "").strip()
         if target_dir:
             result.update(library.plan_target(target_dir, result))
         return result
+
+    def list_folders(self, directory: str, model_type: str) -> dict[str, Any]:
+        """列出类型目录下已有的子文件夹，供预览里的归档位置选择。"""
+        root = (directory or self.config.data.get("default_download_dir") or "").strip()
+        type_key = library.normalize_type(model_type)
+        type_dir = library.MODEL_TYPES[type_key]["dir"]
+        if not root:
+            return {"ok": True, "folders": [], "model_dir": ""}
+        base = Path(root)
+        if base.name.lower() != type_dir.lower():
+            base = base / type_dir
+        try:
+            folders = sorted(
+                (
+                    item.name
+                    for item in base.iterdir()
+                    if item.is_dir()
+                    and not item.name.startswith(".")
+                    and item.name != "__pycache__"
+                    and not library.is_asset_dir(item)
+                ),
+                key=str.lower,
+            )
+        except OSError:
+            folders = []
+        return {"ok": True, "folders": folders, "model_dir": str(base)}
+
+    def read_clipboard(self) -> dict[str, Any]:
+        return {"ok": True, "text": _read_clipboard_text()}
+
+    def write_clipboard(self, text: str) -> dict[str, Any]:
+        return {"ok": _write_clipboard_text(str(text or ""))}
 
     def create_task(self, plan: dict[str, Any], directory: str = "") -> dict[str, Any]:
         if not isinstance(plan, dict) or not plan.get("ok") or not plan.get("download_url"):
@@ -219,6 +325,7 @@ class Api:
         plan["title"] = title
         plan["folder_name"] = title
         plan["filename"] = f"{title}{ext}"
+        plan["subdir"] = library.safe_name(plan.get("subdir") or "", "", 64)
 
         try:
             os.makedirs(target_dir, exist_ok=True)
@@ -281,7 +388,15 @@ class Api:
 
         new_title = library.safe_name(str(patch.get("title") or src.stem), src.stem)
         models_root = type_anchor.parent
-        new_base = models_root / new_type_dir
+        # 保留模型在类型目录下的子文件夹；老布局「模型名文件夹里放文件」按上一层算
+        container = src.parent
+        if container.name.lower() == src.stem.lower() and container != type_anchor:
+            container = container.parent
+        try:
+            relative = container.relative_to(type_anchor)
+        except ValueError:
+            relative = Path()
+        new_base = models_root / new_type_dir / relative
         new_path = new_base / f"{new_title}{src.suffix}"
         legacy_dir = src.parent if src.parent.name.lower() == src.stem.lower() else None
         old_asset = src.parent / src.stem
@@ -711,9 +826,9 @@ def main() -> None:
         APP_NAME,
         f"{api._asset_base}/index.html",
         js_api=api,
-        width=1320,
-        height=860,
-        min_size=(1040, 680),
+        width=1460,
+        height=880,
+        min_size=(1460, 720),
         background_color="#FFFFFF",
         hidden=True,
     )
@@ -728,6 +843,15 @@ def main() -> None:
             api._window.show()
         except Exception:  # noqa: BLE001
             pass
+
+    def _on_closing() -> None:
+        # 关窗口时暂停未完成任务并保存进度，下次启动可继续
+        try:
+            api._downloader.shutdown()
+        except Exception:  # noqa: BLE001 - 收尾失败不能卡住退出
+            pass
+
+    api._window.events.closing += _on_closing
 
     webview.start(_startup, debug=bool(os.environ.get("MODEL_DOWNLOADER_DEBUG")))
 

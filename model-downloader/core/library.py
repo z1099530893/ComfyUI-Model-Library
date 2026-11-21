@@ -26,6 +26,8 @@ from typing import Any
 
 INVALID_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 MODEL_EXTS = (".safetensors", ".ckpt", ".pt", ".pth", ".bin")
+ASSET_DOCS = ("model.json", "模型使用说明.txt")
+EMPTY_BASE_MODELS = {"", "unknown", "none", "null", "未知"}
 
 # 模型类型是唯一的落点依据：决定 ComfyUI 目录、以及要不要建同名文件夹
 MODEL_TYPES: dict[str, dict[str, Any]] = {
@@ -55,11 +57,31 @@ def safe_name(name: str, fallback: str = "未命名", limit: int = 96) -> str:
     return cleaned[:limit].rstrip(" .") or fallback
 
 
+def base_model_subdir(value: Any) -> str:
+    """把基础模型名整理成一层文件夹名，HF 的 owner/repo 只保留 repo。"""
+    text = str(value or "").strip()
+    if text.lower() in EMPTY_BASE_MODELS:
+        return ""
+    text = text.replace("\\", "/").rstrip("/")
+    text = text.rsplit("/", 1)[-1]
+    return safe_name(text, "", 64)
+
+
+def is_asset_dir(path: Path) -> bool:
+    """判断是否是模型自带的资料夹，避免混进归档文件夹下拉列表。"""
+    try:
+        if any((path / name).is_file() for name in ASSET_DOCS):
+            return True
+        return any(item.name.startswith("示例图_") for item in path.iterdir())
+    except OSError:
+        return False
+
+
 def plan_target(root: str, plan: dict[str, Any]) -> dict[str, Any]:
     """算出这个模型应该落在哪个目录、叫什么名字。
 
-    模型文件平铺在类型目录下，资料放在同名文件夹里（ComfyUI 只列模型文件，
-    不会因为资料文件夹多出一层目录）。
+    模型文件放在类型目录下，可选择再按基础模型分一层；说明和示例图放在
+    同名文件夹里（ComfyUI 只列模型文件，不会因为资料文件夹多出一层目录）。
     """
     model_type = normalize_type(plan.get("model_type") or plan.get("type_dir"))
     spec = MODEL_TYPES[model_type]
@@ -71,6 +93,11 @@ def plan_target(root: str, plan: dict[str, Any]) -> dict[str, Any]:
     # 用户如果直接选中了 loras / checkpoints 这类目录，就不再重复加一层
     if base.name.lower() != type_dir.lower():
         base = base / type_dir
+
+    # 二级文件夹由用户在预览里选择或输入；留空就仍然放在类型目录下
+    subdir = safe_name(plan.get("subdir") or "", "", 64)
+    if subdir:
+        base = base / subdir
 
     model_path = base / filename
     # 同名文件已存在且大小不同，说明是另一个版本，用版本名区分
@@ -93,6 +120,7 @@ def plan_target(root: str, plan: dict[str, Any]) -> dict[str, Any]:
     return {
         "model_type": model_type,
         "type_dir": type_dir,
+        "subdir": subdir,
         "folder_mode": bool(spec["folder"]),
         "folder_name": title,
         "model_dir": str(base),

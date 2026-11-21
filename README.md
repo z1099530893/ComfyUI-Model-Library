@@ -5,7 +5,7 @@
 | 工具 | 作用 | 当前状态 |
 | --- | --- | --- |
 | **模型下载器**（model-downloader） | 从模型站点下载模型，自动归档、写说明、生成示例图索引，并提供本地模型库管理界面 | v0.6.0，提供 Windows 免安装版，支持 Civitai、Hugging Face、ModelScope |
-| **本地模型库插件**（comfyui-model-library） | 在 ComfyUI 侧边栏浏览本机模型，查看示例图和说明，一键/拖拽插入加载节点 | v0.1.2，功能可用 |
+| **本地模型库插件**（comfyui-model-library） | 在 ComfyUI 侧边栏浏览本机模型，查看示例图和说明，一键/拖拽插入加载节点 | v0.1.3，功能可用 |
 
 两个工具共享同一套目录和元数据约定（`model.json`、`模型使用说明.txt`、示例图），可以各自独立使用，也可以搭配使用。
 
@@ -21,7 +21,8 @@ Lora_Downloads/
 ├─ docs/
 │  ├─ interaction-rules.md      # 人机协作规则
 │  ├─ backup.md                 # 代码备份逻辑与备份节点
-│  └─ roadmap.md                # 开发计划与当前阶段
+│  ├─ roadmap.md                # 开发计划与当前阶段
+│  └─ images/                   # README 功能截图
 ├─ model-downloader/            # 模型下载器（Python + 本地网页界面）
 │  ├─ app.py
 │  ├─ core/
@@ -121,8 +122,8 @@ powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1
 
 方式一：Release 包（推荐，普通用户）
 
-1. 打开 [插件 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/plugin-v0.1.2)；
-2. 下载 `ComfyUI-ModelLibrary-v0.1.2.zip`；
+1. 打开 [插件 Releases](https://github.com/z1099530893/ComfyUI-Model-Library/releases/tag/plugin-v0.1.3)；
+2. 下载 `ComfyUI-ModelLibrary-v0.1.3.zip`；
 3. 解压到 ComfyUI 的 `custom_nodes` 目录，确保路径为：
 
 ```
@@ -158,23 +159,32 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 **下载与归档**
 
 - 解析 Civitai、Hugging Face、ModelScope 的模型页/文件页/下载直链，读取标题、版本、作者、基础模型、触发词、标签、NSFW 等元数据。
+- 解析预览可选择或新建归档子文件夹，例如 `loras\moss`；留空则仍然放在类型目录下。
 - Hugging Face 支持模型主页、`tree` 目录页、`blob` 文件页和 `resolve` 直链；ModelScope 支持模型主页、文件页和 `resolve` 直链。
 - 下载时按站点自动携带对应 Token：Civitai API Key、Hugging Face Token、ModelScope Token。
 - 断点续传：先写 `.part` 文件，再用 HTTP Range 续传；支持暂停、继续、取消。
 - 按模型类型自动归档到 `checkpoints`、`diffusion_models`、`loras`、`vae`、`text_encoders`、`upscale_models`。
-- 模型文件平铺在类型目录下，说明和示例图放在同名文件夹里，ComfyUI 下拉列表不会多出一层目录。
+- 模型文件放在类型目录下，可再按基础模型分子文件夹（例如 `loras\moss`）；说明和示例图放在同目录的同名文件夹里，ComfyUI 只列模型文件，并按子文件夹分组显示。
 - 自动下载示例图、生成 `模型使用说明.txt`、写入 `model.json`、记录 SHA256。
 - 下载完成后可自动接入 ComfyUI：同盘硬链接、跨盘软链接，或写入 `extra_model_paths.yaml` 映射；源文件已在 ComfyUI 模型目录内时自动跳过，不会重复占用空间。
+
+<img src="docs/images/downloader-download.png" alt="下载任务页：粘贴链接解析后预览模型信息、归档类型与基础模型子目录" width="820">
 
 **本地模型库**
 
 - 扫描「设置 → 模型库扫描范围」中的目录，读取 `model.json` 和说明文档；老模型没有元数据时会回退到目录名/说明文档推断。
 - 搜索、类型筛选、基础模型筛选、排序、网格/列表视图、卡片大小调节。
-- 模型详情：示例图轮播、触发词、作者、大小、时间、来源网页、说明文档。
+- 模型详情：示例图轮播、触发词、作者、大小、时间、来源网页、模型说明（与编辑页同一份数据），并可打开完整说明文档。
 - NSFW 封面默认模糊，可在右上角统一开关；详情内可单独显示/重新模糊。
 - 批量选择、批量「补数据」（按 SHA256 到 Civitai 匹配并补全元数据）、批量移入回收站（模型文件 + 同名资料夹一起删除，可从回收站恢复）。
 - 右键菜单：打开文件夹、复制信息、移入回收站。
-- 设置：默认目录、最近目录、模型库目录、ComfyUI 目录、接入方式（自动/映射/硬链接/软链接）、各站点 Token、代理、缓存清理。
+- 设置：默认目录、最近目录、模型库目录、ComfyUI 目录、接入方式（自动/映射/硬链接/软链接）、各站点 Token、代理、内容与显示（NSFW 模糊、启动自动扫描）、缓存清理。
+
+<img src="docs/images/downloader-library.png" alt="模型库：类型与基础模型筛选、排序、缩放和网格/列表视图" width="820">
+
+<img src="docs/images/downloader-detail.png" alt="模型详情：示例图轮播、元数据、模型说明与完整文档入口" width="820">
+
+<img src="docs/images/downloader-settings.png" alt="设置页：模型库扫描范围、ComfyUI 接入方式与维护" width="820">
 
 **当前限制**
 
@@ -196,13 +206,19 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 | 模型类型 | 生成的节点 | 参数 |
 | --- | --- | --- |
 | Checkpoint 模型 | CheckpointLoaderSimple | ckpt_name |
-| LoRA 模型 | LoraLoader | lora_name |
+| LoRA 模型 | LoraLoaderModelOnly | lora_name |
 | UNET 模型 | UNETLoader | unet_name |
 | VAE 模型 | VAELoader | vae_name |
 | CLIP 模型 | CLIPLoader | clip_name |
 | Upscale 模型 | UpscaleModelLoader | model_name |
 
   其余类型（ControlNet、CLIP Vision、Embedding）只浏览、复制名称、打开文件夹，不创建节点。
+
+  LoRA 默认插入「LoRA加载器（仅模型）」，只输出 MODEL；需要 CLIP 输出时可在画布上手动换成「加载LoRA」。
+
+<img src="docs/images/plugin-library.png" alt="插件侧边栏：按类型浏览本机模型，卡片展示封面、基础模型与示例图数量" width="360">
+
+<img src="docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点/打开文件夹、触发词与说明文档" width="360">
 
 - 卡片 `+` 按钮和详情页「插入节点」按钮效果相同，适合不方便拖拽时使用。
 - NSFW 封面默认模糊：面板右上角按钮统一控制全部缩略图；详情页内点图片或右上角眼睛按钮可单独显示/重新模糊。
@@ -236,6 +252,7 @@ models/loras/<模型文件名>/
   "version_name": "v1.0",
   "model_type": "lora",
   "base_model": "Illustrious",
+  "description": "作者提供的说明正文（详情页与编辑页共用）",
   "trigger_words": ["xxx"],
   "nsfw": false,
   "file": { "name": "xxx.safetensors", "size": 123, "sha256": "..." },
