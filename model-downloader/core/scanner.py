@@ -189,13 +189,9 @@ def _read_txt(path: Path) -> dict[str, Any]:
 DOC_EMPTY_TEXT = "（作者没有提供文字说明）"
 
 
-def _desc_from_doc(doc: str) -> str:
-    """从说明文档里取「模型说明」正文，兼容只有纯文本的老文档。"""
-    text = str(doc or "")
-    if not text.strip():
-        return ""
-    lines = text.splitlines()
-    body = text.strip()
+def _doc_section(doc: str) -> str | None:
+    """有「模型说明」标题时返回其正文；没有该标题返回 None（老式纯文本文档）。"""
+    lines = str(doc or "").splitlines()
     for index, line in enumerate(lines):
         if line.strip() == "模型说明":
             rest = [
@@ -204,8 +200,17 @@ def _desc_from_doc(doc: str) -> str:
                 if item.strip() and set(item.strip()) != {"-"}
             ]
             body = "\n".join(rest).strip()
-            break
-    return "" if body == DOC_EMPTY_TEXT else body
+            return "" if body == DOC_EMPTY_TEXT else body
+    return None
+
+
+def _desc_from_doc(doc: str) -> str:
+    """从说明文档里取正文：优先「模型说明」段落，老文档则整篇当正文。"""
+    section = _doc_section(doc)
+    if section is not None:
+        return section
+    text = str(doc or "").strip()
+    return "" if text == DOC_EMPTY_TEXT else text
 
 
 def _describe(path: Path, meta: dict[str, Any], asset_dir: Path | None = None) -> dict[str, Any]:
@@ -235,8 +240,11 @@ def _describe(path: Path, meta: dict[str, Any], asset_dir: Path | None = None) -
         mtime = 0
 
     description = str(meta.get("description") or "").strip()
-    if not description:
-        # 老模型只有 txt 没有 json 说明，用文档里的正文补齐，保证编辑页和详情页同源
+    # 说明文档优先：txt 里「模型说明」段落的修改重新扫描后生效；老格式文档不动 json 说明
+    section = _doc_section(str(meta.get("doc") or ""))
+    if section:
+        description = section
+    elif not description:
         description = _desc_from_doc(str(meta.get("doc") or ""))
 
     return {

@@ -569,18 +569,12 @@ function detailHtml(model) {
       }
 
       ${
-        desc
-          ? `<section class="ml-field"><h4>模型说明</h4><p class="ml-desc">${escapeHtml(
-              desc
-            )}</p></section>`
-          : ""
-      }
-
-      ${
-        doc
-          ? `<section class="ml-field"><h4>说明文档</h4><pre class="ml-doc">${escapeHtml(
+        doc || desc
+          ? `<section class="ml-field"><h4>模型使用说明</h4>${
               doc
-            )}</pre></section>`
+                ? `<pre class="ml-doc">${escapeHtml(doc)}</pre>`
+                : `<p class="ml-desc">${escapeHtml(desc)}</p>`
+            }</section>`
           : ""
       }
     </div>`;

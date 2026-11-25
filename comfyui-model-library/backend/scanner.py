@@ -97,6 +97,7 @@ TXT_KEYS = {
     "下载时间": "downloaded_at",
 }
 EMPTY_VALUES = {"", "（无）", "(无)", "（未知）", "(未知)", "无", "未知"}
+DOC_EMPTY_TEXT = "（作者没有提供文字说明）"
 
 _lock = threading.RLock()
 _cache: dict[str, Any] = {"models": [], "index": {}, "scanned_at": 0.0, "roots": []}
@@ -285,6 +286,12 @@ def _read_meta(folder: str, cache: dict[str, dict[str, Any]]) -> dict[str, Any]:
         meta["doc"] = text[:DOC_LIMIT]
         for field, value in _parse_doc(text).items():
             meta.setdefault(field, value)
+        # 说明文档优先：txt 里「模型说明」段落的修改重新扫描后生效；老格式文档不动 json 说明
+        section = _doc_section(text)
+        if section:
+            meta["description"] = section
+        elif not meta.get("description"):
+            meta["description"] = _doc_body(text)
 
     meta["trigger_words"] = _as_list(meta.get("trigger_words"))
     meta["tags"] = _as_list(meta.get("tags"))
@@ -331,6 +338,30 @@ def _read_doc(folder: str) -> str:
             except (OSError, UnicodeDecodeError):
                 continue
     return ""
+
+
+def _doc_section(text: str) -> str | None:
+    """取「模型说明」分隔线下面的正文；没有该标题时返回 None。"""
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() == "模型说明":
+            rest = [
+                item
+                for item in lines[index + 1 :]
+                if item.strip() and set(item.strip()) != {"-"}
+            ]
+            body = "\n".join(rest).strip()
+            return "" if body == DOC_EMPTY_TEXT else body
+    return None
+
+
+def _doc_body(text: str) -> str:
+    """老式纯文本文档没有标题，整篇都算正文。"""
+    section = _doc_section(text)
+    if section is not None:
+        return section
+    body = text.strip()
+    return "" if body == DOC_EMPTY_TEXT else body
 
 
 def _parse_doc(text: str) -> dict[str, Any]:

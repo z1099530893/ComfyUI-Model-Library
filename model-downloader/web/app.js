@@ -916,8 +916,8 @@ function renderDetail() {
   $("#detailThumbs").classList.toggle("blur", Boolean(blur));
   $("#detailThumbs").hidden = images.length === 0;
 
-  $("#detailDoc").textContent = m.desc || "这个模型还没有文字说明，可在右键菜单「编辑」里补充。";
-  $("#detailOpenDoc").hidden = !m.doc;
+  $("#detailDoc").textContent =
+    m.doc || m.desc || "这个模型还没有文字说明，可在右键菜单「编辑」里补充。";
   $("#detailOpenLink").disabled = !m.source;
 }
 
@@ -1844,13 +1844,7 @@ function bindEvents() {
   $("#detailCopyDoc").addEventListener("click", () => {
     const m = state.detailModel;
     if (!m) return;
-    copyText(m.desc || "", "说明已复制");
-  });
-  $("#detailOpenDoc").addEventListener("click", async () => {
-    const m = state.detailModel;
-    if (!m || !m.doc) return toast("这个模型没有说明文档");
-    const res = await call("open_path", `${m.dir}\\模型使用说明.txt`);
-    if (res && !res.ok) toast(res.message || "打不开说明文档");
+    copyText(m.doc || m.desc || "", "说明已复制");
   });
 
   // 详情里的说明文字：网页默认右键菜单被禁用了，这里补一个复制菜单
