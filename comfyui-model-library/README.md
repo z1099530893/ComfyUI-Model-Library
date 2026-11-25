@@ -36,7 +36,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 - 类型筛选固定为：全部、Checkpoint 模型、UNET 模型、LoRA 模型、VAE 模型、CLIP 模型、Upscale 模型；ControlNet、CLIP Vision、Embedding 只出现在「全部」里。
 - 搜索、类型筛选、分类筛选、排序、网格/列表视图。
 - 分类优先取类型目录下的一级子文件夹名；没有子文件夹时使用 `model.json` 的 `base_model`。
-- 详情页：示例图轮播、触发词、作者、大小、时间、说明文档、来源网页。
+- 详情页：示例图轮播、触发词、作者、大小、时间、来源网页，以及「模型使用说明」正文；直接展示完整说明文档内容，右上角可一键复制。
 - 将卡片拖到画布即可插入加载节点（落在鼠标位置并选中，不自动接线）：
 
 | 模型类型 | 节点 | 参数 |
@@ -53,7 +53,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 
 | 模型库 | 详情页 |
 | --- | --- |
-| <img src="../docs/images/plugin-library.png" alt="侧边栏模型库：类型筛选、基础模型筛选与卡片列表" width="280"> | <img src="../docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点、打开文件夹与说明文档" width="280"> |
+| <img src="../docs/images/plugin-library.png" alt="侧边栏模型库：类型筛选、基础模型筛选与卡片列表" width="280"> | <img src="../docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点、打开文件夹与模型使用说明" width="280"> |
 
 - NSFW 封面默认模糊，面板右上角统一开关；详情页内可单独显示/重新模糊。
 - 详情页「打开文件夹」会在资源管理器中定位模型（Windows）。

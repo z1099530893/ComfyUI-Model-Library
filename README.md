@@ -174,7 +174,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 
 - 扫描「设置 → 模型库扫描范围」中的目录，读取 `model.json` 和说明文档；老模型没有元数据时会回退到目录名/说明文档推断。
 - 搜索、类型筛选、分类筛选、排序、网格/列表视图、卡片大小调节。有归档子文件夹时，分类直接取文件夹名；没有子文件夹的模型可在编辑信息里手动设置分类。
-- 模型详情：示例图轮播、触发词、作者、大小、时间、来源网页、模型说明（与编辑页同一份数据），并可打开完整说明文档。
+- 模型详情：示例图轮播、触发词、作者、大小、时间、来源网页，以及「模型使用说明」正文；详情页直接展示完整说明文档内容，右上角可一键复制。
 - NSFW 封面默认模糊，可在右上角统一开关；详情内可单独显示/重新模糊。
 - 批量选择、批量「补数据」（按 SHA256 到 Civitai 匹配并补全元数据）、批量移入回收站（模型文件 + 同名资料夹一起删除，可从回收站恢复）。
 - 右键菜单：打开文件夹、复制信息、移入回收站。
@@ -182,7 +182,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 
 <img src="docs/images/downloader-library.png" alt="模型库：类型与分类筛选、排序、缩放和网格/列表视图" width="820">
 
-<img src="docs/images/downloader-detail.png" alt="模型详情：示例图轮播、元数据、模型说明与完整文档入口" width="820">
+<img src="docs/images/downloader-detail.png" alt="模型详情：示例图轮播、元数据与模型使用说明" width="820">
 
 <img src="docs/images/downloader-settings.png" alt="设置页：模型库扫描范围、ComfyUI 接入方式与维护" width="820">
 
@@ -200,7 +200,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 - 只读扫描 ComfyUI 的模型目录，覆盖：Checkpoint、UNET（diffusion_models）、LoRA、VAE、CLIP、Upscale、ControlNet、CLIP Vision、Embedding。
 - 类型筛选固定为：全部、Checkpoint 模型、UNET 模型、LoRA 模型、VAE 模型、CLIP 模型、Upscale 模型；ControlNet、CLIP Vision、Embedding 只出现在「全部」里。
 - 卡片展示封面、名称、类型、分类；支持搜索、分类筛选、排序、网格/列表视图。
-- 详情页：示例图轮播、触发词、作者、大小、时间、说明文档、来源网页。
+- 详情页：示例图轮播、触发词、作者、大小、时间、来源网页，以及「模型使用说明」正文；右上角可一键复制说明。
 - 直接拖拽卡片到画布即可插入加载节点，落在鼠标位置并自动选中，不自动接线：
 
 | 模型类型 | 生成的节点 | 参数 |
@@ -218,7 +218,7 @@ mklink /J "G:\ComfyUI_windows_portable\ComfyUI\custom_nodes\ComfyUI-ModelLibrary
 
 | 插件模型库 | 插件详情页 |
 | --- | --- |
-| <img src="docs/images/plugin-library.png" alt="插件侧边栏：按类型浏览本机模型，卡片展示封面、基础模型与示例图数量" width="300"> | <img src="docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点/打开文件夹、触发词与说明文档" width="300"> |
+| <img src="docs/images/plugin-library.png" alt="插件侧边栏：按类型浏览本机模型，卡片展示封面、基础模型与示例图数量" width="300"> | <img src="docs/images/plugin-detail.png" alt="插件详情页：示例图轮播、插入节点/打开文件夹、触发词与模型使用说明" width="300"> |
 
 - 卡片 `+` 按钮和详情页「插入节点」按钮效果相同，适合不方便拖拽时使用。
 - NSFW 封面默认模糊：面板右上角按钮统一控制全部缩略图；详情页内点图片或右上角眼睛按钮可单独显示/重新模糊。
@@ -262,6 +262,8 @@ models/loras/<模型文件名>/
 ```
 
 没有 `model.json` 的旧模型也能显示：插件会读取 `模型使用说明.txt`，并从类型目录推断基础模型。
+
+说明正文以 `模型使用说明.txt` 里「模型说明」分隔线下面的段落为准：下载器和插件都优先取它作为说明，手动改这段文字后重新扫描即可生效；没有「模型说明」标题的老格式文档不会覆盖 `model.json` 里的说明。
 
 ---
 
