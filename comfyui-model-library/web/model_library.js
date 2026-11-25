@@ -570,11 +570,17 @@ function detailHtml(model) {
 
       ${
         doc || desc
-          ? `<section class="ml-field"><h4>模型使用说明</h4>${
-              doc
-                ? `<pre class="ml-doc">${escapeHtml(doc)}</pre>`
-                : `<p class="ml-desc">${escapeHtml(desc)}</p>`
-            }</section>`
+          ? `<section class="ml-field">
+              <div class="ml-field-head">
+                <h4>模型使用说明</h4>
+                <button class="ml-mini" data-role="copy-doc">复制说明</button>
+              </div>
+              ${
+                doc
+                  ? `<pre class="ml-doc">${escapeHtml(doc)}</pre>`
+                  : `<p class="ml-desc">${escapeHtml(desc)}</p>`
+              }
+            </section>`
           : ""
       }
     </div>`;
@@ -901,6 +907,12 @@ function bindEvents(el) {
       case "copy-trigger":
         if (model.trigger) copyText(model.trigger, "触发词");
         break;
+      case "copy-doc": {
+        const doc = state.detailData?.doc || model.doc || "";
+        const desc = state.detailData?.desc || model.desc || "";
+        if (doc || desc) copyText(doc || desc, "说明");
+        break;
+      }
       default:
         break;
     }

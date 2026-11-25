@@ -854,6 +854,39 @@
   color: var(--ml-dim);
 }
 
+.ml-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.ml-field-head h4 {
+  margin: 0;
+}
+
+.ml-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid var(--ml-border);
+  border-radius: 5px;
+  background: var(--ml-card);
+  color: var(--ml-dim);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.ml-mini:hover {
+  background: var(--ml-card-hover);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--ml-fg);
+}
+
 .ml-field p {
   margin: 0;
   font-size: 11.5px;
